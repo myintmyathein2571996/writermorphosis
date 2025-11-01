@@ -1,98 +1,240 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+// import { CalendarDays, Feather } from "lucide-react-native";
+import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { getLatestPosts, getPopularCategories, getPopularPosts, getPopularTags } from "@/api/api";
+import { CategoryScroll } from "@/components/CategoryScroll";
+import { QuoteCarousel } from "@/components/QuoteCarousel";
+import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { TrendingTags } from '@/components/TrendingTags';
+import { VerticalPostCard } from "@/components/VerticalPostCard";
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [selected, setSelected] = useState<string | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+    const [trendingTags, setTrendingTags] = useState<any[]>([]);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const [latestPosts, setLatestPosts] = useState<any[]>([]);
+  const [popularPosts, setPopularPosts] = useState<any[]>([]);
+
+  const [loadingLatest, setLoadingLatest] = useState(true);
+  const [loadingPopular, setLoadingPopular] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+   const [loadingTrendingTags, setLoadingTrendingTags] = useState(true);
+
+
+  const [activeTab, setActiveTab] = useState<'latest' | 'popular'>('latest');
+
+  const dailyQuotes = [
+    { id: "1", text: "Creativity takes courage.", author: "Henri Matisse" },
+    { id: "2", text: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
+    { id: "3", text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
+  ];
+
+  // Fetch categories
+  useEffect(() => {
+    setLoadingCategories(true);
+    getPopularCategories()
+      .then((categoriesData) => setCategories(categoriesData))
+      .catch((err) => console.error(err))
+      .finally(() => setLoadingCategories(false));
+  }, []);
+
+   // Fetch categories
+  useEffect(() => {
+    setLoadingTrendingTags(true);
+    getPopularTags()
+      .then((tagData) => setTrendingTags(tagData))
+      .catch((err) => console.error(err))
+      .finally(() => setLoadingTrendingTags(false));
+  }, []);
+
+  // Fetch latest posts initially
+  useEffect(() => {
+    setLoadingLatest(true);
+    getLatestPosts()
+      .then((latestData) => setLatestPosts(latestData.data || []))
+      .catch((err) => console.error(err))
+      .finally(() => setLoadingLatest(false));
+  }, []);
+
+  const fetchPopularPosts = () => {
+    setLoadingPopular(true);
+    getPopularPosts()
+      .then((popularData) => setPopularPosts(popularData.data || []))
+      .catch((err) => console.error(err))
+      .finally(() => setLoadingPopular(false));
+  };
+
+  const handleTabChange = (tab: 'latest' | 'popular') => {
+    setActiveTab(tab);
+    if (tab === 'popular' && popularPosts.length === 0) {
+      fetchPopularPosts(); // fetch only when switching to popular tab
+    }
+  };
+
+  const NoPosts = () => (
+    <View style={styles.noPostsContainer}>
+      {/* <CalendarDays size={64} color="#555" /> */}
+      <Feather name="calendar" size={64} color="#555" />
+      <Text style={styles.noPostsTitle}>No posts found</Text>
+      <Text style={styles.noPostsText}>No posts were published on this date</Text>
+    </View>
+  );
+
+  const handlePostClick = (post: any) => console.log("Clicked post:", post.title.rendered);
+  const handleAuthorClick = (authorName: string) => console.log("Clicked author:", authorName);
+
+  const postsToShow = activeTab === 'latest' ? latestPosts : popularPosts;
+  const loadingCurrent = activeTab === 'latest' ? loadingLatest : loadingPopular;
+
+  return (
+    <ScreenWrapper
+      logoSource={require("../../assets/images/icon.png")}
+      onProfilePress={() => console.log("Profile tapped")}
+      onNotificationPress={() => console.log("Notification tapped")}
+      loading={loadingCategories}
+      scrollable={true}
+    >
+      {/* <ScrollView style={{ paddingBottom: 24 }}> */}
+        <QuoteCarousel quotes={dailyQuotes} />
+
+        {!loadingCategories && (
+          <CategoryScroll
+            categories={categories}
+            selectedSlug={selected}
+            onSelect={setSelected}
+          />
+        )}
+
+        {/* Custom Tabs */}
+       <View style={styles.tabsContainer}>
+  {['latest', 'popular'].map(tab => (
+    <TouchableOpacity
+      key={tab}
+      style={[styles.tabWrapper, activeTab === tab && styles.activeTabWrapper]}
+      onPress={() => handleTabChange(tab as 'latest' | 'popular')}
+    >
+      <View style={styles.tabContent}>
+        {/* Choose icon based on tab */}
+        {tab === 'latest' ? (
+           <Feather
+            name="clock"
+            size={16}
+            color={activeTab === tab ? '#d8d3ca' : '#d8d3ca'}
+            style={styles.tabIcon}
+          />
+        ) : (
+           <Feather
+            name="star"
+            size={16}
+            color={activeTab === tab ? '#d8d3ca' : '#d8d3ca'}
+            style={styles.tabIcon}
+          />
+        )}
+        <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+          {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  ))}
+</View>
+
+        {/* Posts */}
+        {loadingCurrent ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
+        ) : postsToShow.length === 0 ? (
+          <NoPosts />
+        ) : (
+          <View style={{ padding: 12 }}>
+            {postsToShow.map((post, idx) => (
+              <VerticalPostCard
+                key={post.id}
+                post={post}
+                // featured={idx === 0}
+                onClick={() => handlePostClick(post)}
+                onAuthorClick={handleAuthorClick}
+              />
+            ))}
+          </View>
+        )}
+
+ {!loadingTrendingTags && (
+           <TrendingTags
+  tags={trendingTags} // define trendingTags in your state or props
+  onTagClick={(slug) => console.log('Clicked tag:', slug)}
+/>
+        )}
+      
+      {/* </ScrollView> */}
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  noPostsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  noPostsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 12,
+  },
+  noPostsText: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 4,
+    textAlign: "center",
+  },
+  tabsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#ccc',
+    backgroundColor : '#4a3a32',
+    gap: 10,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  activeTabWrapper: {
+    backgroundColor: '#2a2422',
+     paddingVertical: 14,
+  paddingHorizontal: 24,
+   
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+
+
+  tabWrapper: {
+  // marginRight: 16,
+// backgroundColor: '#2a2422',
+     paddingVertical: 14,
+  paddingHorizontal: 24,
+  borderRadius: 18,
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center', // center content inside tab
+},
+tabContent: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center', // center icon + text horizontally
+  
+},
+tabIcon: {
+  marginRight: 6, // spacing between icon and text
+},
+tabText: {
+  fontSize: 13,
+  color: '#d8d3ca',
+  fontWeight: '500',
+},
+activeTabText: {
+  color: '#d8d3ca',
+  fontWeight: '700',
+},
+
 });
