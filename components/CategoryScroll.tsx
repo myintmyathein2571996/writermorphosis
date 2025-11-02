@@ -1,10 +1,11 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface Category {
@@ -15,15 +16,19 @@ interface Category {
 
 interface CategoryScrollProps {
   categories: Category[];
-  selectedSlug: string | null;
-  onSelect: (slug: string | null) => void;
 }
 
-export const CategoryScroll: React.FC<CategoryScrollProps> = ({
-  categories,
-  selectedSlug,
-  onSelect,
-}) => {
+export const CategoryScroll: React.FC<CategoryScrollProps> = ({ categories }) => {
+  const router = useRouter();
+
+  const handlePress = (slug: string) => {
+    router.push({
+    pathname: "/category/[slug]",
+    params: { slug },
+    });
+
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView
@@ -31,44 +36,14 @@ export const CategoryScroll: React.FC<CategoryScrollProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* "All" badge */}
-        {/* <TouchableOpacity
-          style={[
-            styles.badge,
-            selectedSlug === null && styles.badgeActive,
-          ]}
-          onPress={() => onSelect(null)}
-          activeOpacity={0.8}
-        >
-          <Text
-            style={[
-              styles.badgeText,
-              selectedSlug === null && styles.badgeTextActive,
-            ]}
-          >
-            All
-          </Text>
-        </TouchableOpacity> */}
-
-        {/* Category badges */}
         {categories.slice(0, 6).map((category) => (
           <TouchableOpacity
             key={category.id}
-            style={[
-              styles.badge,
-              selectedSlug === category.slug && styles.badgeActive,
-            ]}
-            onPress={() => onSelect(category.slug)}
+            style={styles.badge}
+            onPress={() => handlePress(category.slug)}
             activeOpacity={0.8}
           >
-            <Text
-              style={[
-                styles.badgeText,
-                selectedSlug === category.slug && styles.badgeTextActive,
-              ]}
-            >
-              {category.name}
-            </Text>
+            <Text style={styles.badgeText}>{category.name}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -78,9 +53,9 @@ export const CategoryScroll: React.FC<CategoryScrollProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1e1a18", // var(--content-bg)
+    backgroundColor: "#1e1a18",
     borderBottomWidth: 1,
-    borderColor: "#4b4643", // var(--tundora)
+    borderColor: "#4b4643",
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
@@ -91,22 +66,14 @@ const styles = StyleSheet.create({
   },
   badge: {
     borderWidth: 1,
-    borderColor: "#4b4643", // outline color
+    borderColor: "#4b4643",
     borderRadius: 20,
     paddingVertical: 6,
     paddingHorizontal: 14,
     backgroundColor: "transparent",
   },
-  badgeActive: {
-    backgroundColor: "#d2884a", // accent orange
-    borderColor: "#d2884a",
-  },
   badgeText: {
     fontSize: 14,
-    color: "#f5f2eb", // var(--pampas)
-  },
-  badgeTextActive: {
-    color: "#1e1a18", // dark text when active
-    fontWeight: "600",
+    color: "#f5f2eb",
   },
 });

@@ -9,6 +9,7 @@ import { QuoteCarousel } from "@/components/QuoteCarousel";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { TrendingTags } from '@/components/TrendingTags';
 import { VerticalPostCard } from "@/components/VerticalPostCard";
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const [selected, setSelected] = useState<string | null>(null);
@@ -83,11 +84,31 @@ export default function HomeScreen() {
     </View>
   );
 
-  const handlePostClick = (post: any) => console.log("Clicked post:", post.title.rendered);
+const handlePostClick = (post: any) => {
+  router.push({
+    pathname: `/post/[id]`,
+    params: {
+      id: post.id,              // required
+      post: JSON.stringify(post) // optional extra data
+    },
+  });
+};
+
+
   const handleAuthorClick = (authorName: string) => console.log("Clicked author:", authorName);
 
   const postsToShow = activeTab === 'latest' ? latestPosts : popularPosts;
   const loadingCurrent = activeTab === 'latest' ? loadingLatest : loadingPopular;
+
+
+  
+  const handlePress = (slug: string) => {
+    router.push({
+    pathname: "/tag/[slug]",
+    params: { slug },
+    });
+
+  };
 
   return (
     <ScreenWrapper
@@ -103,8 +124,8 @@ export default function HomeScreen() {
         {!loadingCategories && (
           <CategoryScroll
             categories={categories}
-            selectedSlug={selected}
-            onSelect={setSelected}
+            // selectedSlug={selected}
+            // onSelect={setSelected}
           />
         )}
 
@@ -163,7 +184,7 @@ export default function HomeScreen() {
  {!loadingTrendingTags && (
            <TrendingTags
   tags={trendingTags} // define trendingTags in your state or props
-  onTagClick={(slug) => console.log('Clicked tag:', slug)}
+  onTagClick={(slug) => handlePress(slug)}
 />
         )}
       

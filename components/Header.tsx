@@ -1,27 +1,53 @@
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface HeaderProps {
+  logoSource: any;
   onProfilePress?: () => void;
   onNotificationPress?: () => void;
-  logoSource: any; // require('...') or { uri: '...' }
+  showBackButton?: boolean;
+  title?: string;
 }
 
-export function Header({ onProfilePress, onNotificationPress, logoSource }: HeaderProps) {
+export function Header({
+  logoSource,
+  onProfilePress,
+  onNotificationPress,
+  showBackButton = false,
+  title,
+}: HeaderProps) {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-      {/* Left: Profile */}
-      {/* <TouchableOpacity onPress={onProfilePress} style={styles.sideIcon}>
-        <User color="#fff" size={28} />
-      </TouchableOpacity> */}
+      {/* Left: Back or empty space */}
+      {showBackButton ? (
+        <TouchableOpacity onPress={() => router.back()} style={styles.sideIcon}>
+          <Feather name="arrow-left" size={22} color="#fff" />
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.sideIcon} />
+      )}
 
-      {/* Center: App Logo */}
-      <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+      {/* Center: Logo or Title */}
+      {title ? (
+        <Text numberOfLines={1} style={styles.title}>
+          {title}
+        </Text>
+      ) : (
+        <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+      )}
 
-      {/* Right: Notification */}
-      {/* <TouchableOpacity onPress={onNotificationPress} style={styles.sideIcon}>
-        <Bell color="#fff" size={28} />
-      </TouchableOpacity> */}
+      {/* Right: Placeholder for symmetry */}
+      <View style={styles.sideIcon} />
     </View>
   );
 }
@@ -32,12 +58,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#d2884a",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
   },
   logo: {
-    height: 60,
+    height: 50,
     width: 120,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+    textAlign: "center",
+    flex: 1,
   },
   sideIcon: {
     width: 40,

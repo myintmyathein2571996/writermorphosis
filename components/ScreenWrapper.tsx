@@ -1,16 +1,23 @@
-// ScreenWrapper.tsx
 import React, { ReactNode } from "react";
-import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header } from "./Header";
 
 interface ScreenWrapperProps {
   children: ReactNode;
-  logoSource: any; // require(...) or { uri: '...' }
+  logoSource: any;
   onProfilePress?: () => void;
   onNotificationPress?: () => void;
-  scrollable?: boolean; 
-  loading?: boolean; // new prop to show loading
+  scrollable?: boolean;
+  loading?: boolean;
+  showBackButton?: boolean;
+  title?: string;
 }
 
 export function ScreenWrapper({
@@ -20,21 +27,25 @@ export function ScreenWrapper({
   onNotificationPress,
   scrollable = true,
   loading = false,
+  showBackButton = false,
+  title,
 }: ScreenWrapperProps) {
   const Container = scrollable ? ScrollView : View;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" />
       <Header
         logoSource={logoSource}
         onProfilePress={onProfilePress}
         onNotificationPress={onNotificationPress}
+        showBackButton={showBackButton}
+        title={title}
       />
-      
+
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#f5f2eb" /> 
+          <ActivityIndicator size="large" color="#f5f2eb" />
         </View>
       ) : (
         <Container style={styles.content}>{children}</Container>
@@ -50,7 +61,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    // padding: 16,
   },
   loadingContainer: {
     flex: 1,

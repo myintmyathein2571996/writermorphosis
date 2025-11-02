@@ -1,6 +1,7 @@
 import { getCategories } from "@/api/api";
 import { CategoryCard } from "@/components/CategoryCard";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 
@@ -15,6 +16,14 @@ export default function Categories({ navigation }: any) {
   }, []);
 
 
+    const handlePress = (slug: string) => {
+    router.push({
+    pathname: "/category/[slug]",
+    params: { slug },
+    });
+
+  };
+
   return (
     <ScreenWrapper
       logoSource={require('../../assets/images/icon.png')}
@@ -24,7 +33,7 @@ export default function Categories({ navigation }: any) {
     >
       <View style={{ padding: 16 }}>
        {categories.map((cat) => (
-        <CategoryCard key={cat.id} category={cat} />
+        <CategoryCard key={cat.id} category={cat} onPress={() => handlePress(cat.slug)}/>
       ))}
       </View>
      

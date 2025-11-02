@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  // baseURL: "https://writermorphosis.com/wp-json/wp/v2",
-  baseURL: "http://192.168.78.155/wp-writerposis/wp-json",
+  baseURL: "https://writermorphosis.com/wp-json",
+  // baseURL: "http://192.168.78.155/wp-writerposis/wp-json",
   timeout: 10000,
 });
 
@@ -77,4 +77,21 @@ export const getPopularPosts = async (page = 1, perPage = 6) => {
     data: res.data,
     totalPages: parseInt(res.headers['x-wp-totalpages'] || '1', 10),
   };
+};
+
+export const getPostsByTag = async (tagId: number) => {
+  const res = await api.get("/wp/v2/posts", {
+    params: { tags: tagId, _embed: true, per_page: 20 },
+  });
+  return res.data;
+};
+
+export const incrementPostView = async (postId: number) => {
+  try {
+    const res = await api.post(`/custom/v1/view/${postId}`);
+    return res.data; // returns { post_id, views }
+  } catch (err: any) {
+    console.error('Failed to increment post views:', err.response?.data || err.message);
+    throw new Error('Could not increment post views');
+  }
 };

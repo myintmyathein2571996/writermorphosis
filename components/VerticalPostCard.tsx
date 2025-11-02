@@ -71,7 +71,7 @@ export function VerticalPostCard({
       <View style={styles.content}>
         <TouchableOpacity onPress={onClick}>
           <Text style={styles.title}>{postTitle}</Text>
-          <Text style={styles.excerpt}>{excerptText}</Text>
+          <Text style={styles.excerpt} numberOfLines={3}>{excerptText}</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>

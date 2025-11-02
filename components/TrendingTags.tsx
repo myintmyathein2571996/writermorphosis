@@ -20,23 +20,20 @@ export const TrendingTags: React.FC<TrendingTagsProps> = ({ tags, onTagClick }) 
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.iconWrapper}>
-          <Feather name="trending-up" size={20} color="#d2884a" />
+          <Feather name="trending-up" size={20} color="#e0a96d" />
         </View>
         <Text style={styles.headerText}>Trending Tags</Text>
       </View>
       <View style={styles.tagsContainer}>
-        {tags.slice(0, 8).map((tag, index) => (
+        {tags.slice(0, 8).map((tag) => (
           <TouchableOpacity
             key={tag.id}
             onPress={() => onTagClick(tag.slug)}
-            style={[
-              styles.tagButton,
-              { backgroundColor: index % 2 === 0 ? '#fff' : 'rgba(210, 136, 74, 0.1)' },
-            ]}
+            style={styles.tagButton}
           >
             <Text style={styles.tagText}>
-              <Text style={{ color: '#d2884a' }}>#</Text>
-              {tag.name}{" "}
+              <Text style={{ color: '#c6b8a6' }}>#</Text>
+              {tag.name}{' '}
               <Text style={styles.tagCount}>{tag.count}</Text>
             </Text>
           </TouchableOpacity>
@@ -50,11 +47,11 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 16,
     padding: 12,
-    // borderTopWidth: 1,
-    // borderBottomWidth: 1,
-    // borderColor: '#ccc',
-    backgroundColor: 'rgba(210, 136, 74, 0.15)',
-    // borderRadius: 12,
+    backgroundColor: 'rgba(60, 50, 45, 0.6)',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(224, 169, 109, 0.2)',
+    // borderRadius: 10,
   },
   header: {
     flexDirection: 'row',
@@ -65,12 +62,12 @@ const styles = StyleSheet.create({
   iconWrapper: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: 'rgba(210, 136, 74, 0.2)',
+    backgroundColor: 'rgba(224, 169, 109, 0.15)',
   },
   headerText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333',
+    color: '#f1e7d6',
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -82,19 +79,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#d2884a33',
-    marginBottom: 8,
+    borderColor: 'rgba(224, 169, 109, 0.6)',
+    backgroundColor: '#2b2523',
   },
   tagText: {
     fontSize: 14,
-    color: '#333',
+    color: '#e8dfcf',
   },
   tagCount: {
     fontSize: 12,
-    backgroundColor: 'rgba(210, 136, 74, 0.2)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    color: '#d2884a',
+    color: '#e0a96d',
   },
 });
