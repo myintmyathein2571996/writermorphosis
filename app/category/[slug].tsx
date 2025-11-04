@@ -6,7 +6,7 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
 
 export default function CategoryPage() {
-  const { slug } = useLocalSearchParams();
+  const { slug , name } = useLocalSearchParams();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState<string>("");
@@ -40,7 +40,7 @@ export default function CategoryPage() {
       logoSource={require("../../assets/images/icon.png")}
       loading={loading}
       showBackButton
-      title={categoryName.toUpperCase()}
+      title={(name as string) || (categoryName as string)?.toUpperCase()}
       scrollable={false}
     >
       {loading ? (

@@ -50,6 +50,7 @@ export default function TagDetailPage() {
     <ScreenWrapper
       logoSource={require("../../assets/images/icon.png")}
       loading={loading}
+      scrollable={false}
       showBackButton
       title={`#${String(slug).toUpperCase()}`}
     >

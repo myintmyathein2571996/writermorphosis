@@ -1,4 +1,4 @@
-import { Clock, Eye } from "lucide-react-native";
+import { Eye, MessageCircle } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Badge } from "./ui/Badge";
@@ -7,14 +7,25 @@ type WPPost = {
   id: number;
   title: { rendered: string };
   excerpt: { rendered: string };
+  comment_count: number;
   date: string;
   meta?: { post_views?: number; read_time?: string };
   _embedded?: {
-    author?: { id: number; name: string; avatar_urls: { [size: string]: string } }[];
+    author?: {
+      id: number;
+      name: string;
+      avatar_urls: { [size: string]: string };
+    }[];
     ["wp:featuredmedia"]?: { source_url: string }[];
+    ["wp:term"]?: {
+      id: number;
+      name: string;
+      taxonomy: string;
+    }[][];
   };
   categories?: { id: number; name: string }[];
 };
+
 
 interface VerticalPostCardProps {
   post: WPPost;
@@ -49,9 +60,20 @@ export function VerticalPostCard({
     day: "numeric",
   });
 
-  const readTime = post.meta?.read_time || "2 min";
+  // const readTime = post.meta?.read_time || "2 min";
   const views = post.meta?.post_views || 0;
-  const category = post.categories?.[0]?.name || "Uncategorized";
+  const commentsCount = post.comment_count || 0;
+  // const category = post.categories?.[0]?.name || "Uncategorized";
+
+// Extract categories from embedded terms
+const categories =
+  post._embedded?.["wp:term"]?.[0]?.filter(
+    (term: { id: number; name: string; taxonomy: string }) =>
+      term.taxonomy === "category"
+  ) || [];
+
+const category = categories[0]?.name || "Uncategorized";
+
 
   return (
     <View style={[styles.card, featured && styles.featuredCard]}>
@@ -63,9 +85,7 @@ export function VerticalPostCard({
         <View style={styles.badgeContainer}>
           <Badge text={category} />
         </View>
-        {/* <TouchableOpacity style={styles.bookmarkButton}>
-          <Bookmark color="white" size={18} />
-        </TouchableOpacity> */}
+
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -74,35 +94,39 @@ export function VerticalPostCard({
           <Text style={styles.excerpt} numberOfLines={3}>{excerptText}</Text>
         </TouchableOpacity>
 
-        <View style={styles.footer}>
-          <View style={styles.authorInfo}>
-            {onAuthorClick ? (
-              <TouchableOpacity
-                style={styles.authorButton}
-                onPress={() => onAuthorClick(authorName)}
-              >
-                <Image source={{ uri: authorAvatar }} style={styles.avatar} />
-                <Text style={styles.authorName}>{authorName}</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.authorButton}>
-                <Image source={{ uri: authorAvatar }} style={styles.avatar} />
-                <Text style={styles.authorName}>{authorName}</Text>
-              </View>
-            )}
-            <View style={styles.infoItem}>
-              <Clock size={14} color="#888" />
-              <Text style={styles.infoText}>{readTime}</Text>
-            </View>
-          </View>
+       <View style={styles.footer}>
+  <View style={styles.authorInfo}>
+    {onAuthorClick ? (
+      <TouchableOpacity
+        style={styles.authorButton}
+        onPress={() => onAuthorClick(authorName)}
+      >
+        <Image source={{ uri: authorAvatar }} style={styles.avatar} />
+        <Text style={styles.authorName}>{authorName}</Text>
+      </TouchableOpacity>
+    ) : (
+      <View style={styles.authorButton}>
+        <Image source={{ uri: authorAvatar }} style={styles.avatar} />
+        <Text style={styles.authorName}>{authorName}</Text>
+      </View>
+    )}
+  </View>
 
-          <View style={styles.views}>
-            <Eye size={14} color="#888" />
-            <Text style={styles.infoText}>
-              {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
-            </Text>
-          </View>
-        </View>
+  {/* move comments + views together on right */}
+  <View style={styles.statsRow}>
+    <View style={styles.infoItem}>
+      <MessageCircle size={14} color="#888" />
+      <Text style={styles.infoText}>{commentsCount}</Text>
+    </View>
+    <View style={styles.infoItem}>
+      <Eye size={14} color="#888" />
+      <Text style={styles.infoText}>
+        {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
+      </Text>
+    </View>
+  </View>
+</View>
+
       </View>
     </View>
   );
@@ -127,4 +151,10 @@ const styles = StyleSheet.create({
   infoItem: { flexDirection: "row", alignItems: "center", marginLeft: 8, gap: 2 },
   infoText: { color: "#888", fontSize: 12 },
   views: { flexDirection: "row", alignItems: "center", gap: 4 },
+  statsRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+},
+
 });

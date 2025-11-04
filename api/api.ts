@@ -3,6 +3,7 @@ import axios from "axios";
 const api = axios.create({
   baseURL: "https://writermorphosis.com/wp-json",
   // baseURL: "http://192.168.78.155/wp-writerposis/wp-json",
+  
   timeout: 10000,
 });
 
@@ -10,6 +11,33 @@ export const getCategories = async () => {
   const res = await api.get("/wp/v2/categories", { params: { per_page: 100 } });
   return res.data;
 };
+
+
+export const getPosts = async (
+  page = 1,
+  perPage = 10,
+  extraParams: Record<string, any> = {}
+) => {
+  const params: any = {
+    _embed: true,
+    page,
+    per_page: perPage,
+    status: "publish",
+    orderby: "date",
+    order: "desc",
+    ...extraParams, // merge any extra query params like { author: 1 }
+  };
+
+  const res = await api.get("/wp/v2/posts", { params });
+
+  return {
+    data: res.data,
+    totalPages: parseInt(res.headers['x-wp-totalpages'] || '1', 10),
+  };
+};
+
+
+
 
 
 export const getLatestPosts = async (
@@ -94,4 +122,10 @@ export const incrementPostView = async (postId: number) => {
     console.error('Failed to increment post views:', err.response?.data || err.message);
     throw new Error('Could not increment post views');
   }
+};
+
+
+export const getQuotes = async (limit = 100) => {
+  const res = await api.get(`custom/v1/quotes?limit=${limit}`);
+  return res.data; // returns [{ id, text }, ...]
 };

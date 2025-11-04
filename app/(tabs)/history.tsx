@@ -6,10 +6,9 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
-  Image,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 
@@ -88,9 +87,12 @@ export default function History({ navigation }: any) {
     fetchHistory();
   }, [fetchHistory]);
 
+  
+
   const renderEvent = ({ item, index }: { item: WikiEvent; index: number }) => {
     const page = item.pages?.[0];
     const yearsAgo = selectedDate.getFullYear() - item.year;
+  // 
 
     return (
       <View
@@ -107,14 +109,8 @@ export default function History({ navigation }: any) {
           elevation: 3,
         }}
       >
-        {page?.thumbnail && (
-          <Image
-            source={{ uri: page.thumbnail.source }}
-            style={{ width: "100%", height: 160 }}
-            resizeMode="cover"
-          />
-        )}
-        
+
+
         <View style={{ padding: 16 }}>
           <Text style={{ color: "#d2884a", fontWeight: "bold", marginBottom: 4 }}>
             {yearsAgo} years ago 
@@ -163,7 +159,7 @@ export default function History({ navigation }: any) {
     );
   }
 
-  const { selected: featured = [], events = [], births = [], deaths = [] } = data;
+  const { selected:  events = [], births = [], deaths = [] } = data;
   const formattedDate = selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
 
   const renderScene = SceneMap({
@@ -172,7 +168,7 @@ export default function History({ navigation }: any) {
         data={events}
         renderItem={renderEvent}
         keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
         initialNumToRender={4}
       />
     ),
@@ -181,7 +177,7 @@ export default function History({ navigation }: any) {
         data={births}
         renderItem={renderEvent}
         keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
         initialNumToRender={4}
       />
     ),
@@ -190,7 +186,7 @@ export default function History({ navigation }: any) {
         data={deaths}
         renderItem={renderEvent}
         keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
         initialNumToRender={4}
       />
     ),
@@ -205,64 +201,119 @@ export default function History({ navigation }: any) {
       scrollable={false}
     >
       {/* Date Picker */}
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
+
+      <View
+  style={{
+    borderBottomWidth: 1,
+    borderBottomColor: "#3a2e28",
+    paddingTop: 16,
+    paddingBottom: 32,
+    backgroundColor: "#2b211c",
+  }}
+>
+  {/* Header Row */}
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    }}
+  >
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <Calendar width={22} height={22} color="#fff" />
+      <Text
         style={{
-          margin: 16,
-          padding: 16,
-          borderRadius: 16,
-          backgroundColor: "#2a2422",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
+          color: "#fff",
+          fontWeight: "700",
+          fontSize: 16,
+          marginLeft: 8,
         }}
       >
-        <Calendar width={20} height={20} color="#d2884a" />
-        <Text style={{ color: "#d2884a", fontWeight: "bold", marginLeft: 8, fontSize: 16 }}>
-          {formattedDate}
-        </Text>
-      </TouchableOpacity>
+        This Day in History
+      </Text>
+    </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={selectedDate}
-          mode="date"
-          display="default"
-          onChange={(event, date) => {
-            setShowDatePicker(false);
-            if (date) setSelectedDate(date);
-          }}
-        />
-      )}
+    <TouchableOpacity
+      onPress={() => setShowDatePicker(true)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#3a2e28",
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+      }}
+    >
+      <Calendar width={18} height={18} color="#fff" />
+      <Text
+        style={{
+          color: "#fff",
+          fontWeight: "600",
+          fontSize: 12,
+          marginLeft: 6,
+        }}
+      >
+        {formattedDate}
+      </Text>
+    </TouchableOpacity>
+  </View>
 
-      {/* Featured Events */}
-      {/* {featured.length > 0 && (
-        <FlatList
-          horizontal
-          data={featured}
-          renderItem={renderEvent}
-          keyExtractor={(item, idx) => idx.toString()}
-          contentContainerStyle={{ paddingHorizontal: 16, marginBottom: 24 }}
-          showsHorizontalScrollIndicator={false}
-        />
-      )} */}
+  {/* Subtitle */}
+  <Text
+    style={{
+      color: "#ccc",
+      fontSize: 14,
+      marginTop: 8,
+      marginHorizontal: 16,
+      lineHeight: 20,
+    }}
+  >
+    Discover what happened on{" "}
+    <Text style={{ color: "#f5b041", fontWeight: "600" }}>
+      {formattedDate}
+    </Text>{" "}
+    throughout history.
+  </Text>
 
-      {/* Tabs */}
-      <TabView
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        lazy
-        initialLayout={{ width: Dimensions.get("window").width }}
-        renderTabBar={(props) => (
-          <TabBar
-            {...props}
-            indicatorStyle={{ backgroundColor: "#d2884a" }}
-            style={{ backgroundColor: "#4a3a32" }}
-            labelStyle={{ color: "#FFF", fontWeight: "bold" }}
-          />
-        )}
-      />
+  {showDatePicker && (
+    <DateTimePicker
+      value={selectedDate}
+      mode="date"
+      display="spinner"
+      accentColor="#f5b041"
+      onChange={(event, date) => {
+        setShowDatePicker(false);
+        if (date) setSelectedDate(date);
+      }}
+    />
+  )}
+</View>
+
+
+
+
+{/* TabView */}
+<TabView
+  navigationState={{ index, routes }}
+  renderScene={renderScene}
+  onIndexChange={setIndex}
+  lazy
+  initialLayout={{ width: Dimensions.get("window").width }}
+  renderTabBar={(props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: "#f5b041", height: 3 }}
+      style={{ backgroundColor: "#3a2e28" }}
+
+      activeColor="#f5b041"
+      inactiveColor="#ccc"
+      pressOpacity={0.7}
+    />
+  )}
+/>
+
     </ScreenWrapper>
   );
 }

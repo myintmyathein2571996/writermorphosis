@@ -45,7 +45,7 @@ export const QuoteCarousel: React.FC<QuoteCarouselProps> = ({ quotes }) => {
               </View>
 
               <View style={styles.textContainer}>
-                <Text style={styles.quoteText}>"{item.text}"</Text>
+                <Text style={styles.quoteText} numberOfLines={2}>"{item.text}"</Text>
                 <Text style={styles.authorText}>— {item.author}</Text>
               </View>
             </View>

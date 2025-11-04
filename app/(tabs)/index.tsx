@@ -3,7 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { getLatestPosts, getPopularCategories, getPopularPosts, getPopularTags } from "@/api/api";
+import { getLatestPosts, getPopularCategories, getPopularPosts, getPopularTags, getQuotes } from "@/api/api";
 import { CategoryScroll } from "@/components/CategoryScroll";
 import { QuoteCarousel } from "@/components/QuoteCarousel";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -23,15 +23,26 @@ export default function HomeScreen() {
   const [loadingPopular, setLoadingPopular] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
    const [loadingTrendingTags, setLoadingTrendingTags] = useState(true);
+     const [quotes, setQuotes] = useState<any[]>([]);
+      const [loadingQuotes, setLoadingQuotes] = useState(true);
 
 
   const [activeTab, setActiveTab] = useState<'latest' | 'popular'>('latest');
 
-  const dailyQuotes = [
-    { id: "1", text: "Creativity takes courage.", author: "Henri Matisse" },
-    { id: "2", text: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
-    { id: "3", text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
-  ];
+  // const dailyQuotes = [
+  //   { id: "1", text: "Creativity takes courage.", author: "Henri Matisse" },
+  //   { id: "2", text: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
+  //   { id: "3", text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
+  // ];
+
+    useEffect(() => {
+    setLoadingQuotes(true);
+    getQuotes(10)
+      .then((quoteData) => setQuotes(quoteData || []))
+      .catch((err) => console.error("Error fetching quotes:", err))
+      .finally(() => setLoadingQuotes(false));
+  }, []);
+
 
   // Fetch categories
   useEffect(() => {
@@ -119,7 +130,14 @@ const handlePostClick = (post: any) => {
       scrollable={true}
     >
       {/* <ScrollView style={{ paddingBottom: 24 }}> */}
-        <QuoteCarousel quotes={dailyQuotes} />
+        {!loadingQuotes && quotes.length > 0 ? (
+  <QuoteCarousel quotes={quotes} />
+) : (
+  <View style={{ padding: 20, alignItems: "center" }}>
+    <ActivityIndicator size="small" color="#f5b041" />
+  </View>
+)}
+
 
         {!loadingCategories && (
           <CategoryScroll
@@ -168,6 +186,7 @@ const handlePostClick = (post: any) => {
         ) : postsToShow.length === 0 ? (
           <NoPosts />
         ) : (
+          <>
           <View style={{ padding: 12 }}>
             {postsToShow.map((post, idx) => (
               <VerticalPostCard
@@ -179,14 +198,17 @@ const handlePostClick = (post: any) => {
               />
             ))}
           </View>
-        )}
-
- {!loadingTrendingTags && (
+          {!loadingTrendingTags && (
            <TrendingTags
   tags={trendingTags} // define trendingTags in your state or props
   onTagClick={(slug) => handlePress(slug)}
 />
         )}
+          </>
+          
+        )}
+
+ 
       
       {/* </ScrollView> */}
     </ScreenWrapper>
