@@ -2,6 +2,7 @@
 
 // import HorizontalLatestPostCard from '@/components/HorizontalPostCard';
 // import { useTheme } from '@/context/ThemeContext';
+import CommentsSection from '@/components/CommentsSection';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { Badge } from '@/components/ui/Badge';
 import { VerticalPostCard } from '@/components/VerticalPostCard';
@@ -329,13 +330,15 @@ const tagsStyles: Record<string, any> = {
         )}
 
  <View style={[styles.separator, { backgroundColor: 'gray' }]} />
-          {/* <CommentsSection postId={postData.id} /> */}
+          <View style = {{ paddingHorizontal: 16, marginTop: 16, marginBottom: 32 }}>
+            <CommentsSection postId={postData.id} />
+          </View>
 
 
 
         {author && (
           <>
-            {/* <View style={[styles.separator, { backgroundColor: 'gray' }]} /> */}
+            <View style={[styles.separator, { backgroundColor: 'gray' }]} />
             <View style={styles.sectionContainer}>
 
               <Text style={[styles.sectionTitle, { color: '#d8d3ca' }]}>About the Author</Text>

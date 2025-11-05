@@ -1,3 +1,5 @@
+import { useAuth } from "@/context/AuthContext";
+import { router } from "expo-router";
 import React, { ReactNode } from "react";
 import {
   ActivityIndicator,
@@ -7,24 +9,21 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { getGravatarUrl } from '../utils/avatar';
 import { Header } from "./Header";
 
 interface ScreenWrapperProps {
   children: ReactNode;
   logoSource: any;
-  onProfilePress?: () => void;
-  onNotificationPress?: () => void;
   scrollable?: boolean;
   loading?: boolean;
   showBackButton?: boolean;
-  title?: string;
+  title?: string;     // new prop
 }
 
 export function ScreenWrapper({
   children,
   logoSource,
-  onProfilePress,
-  onNotificationPress,
   scrollable = true,
   loading = false,
   showBackButton = false,
@@ -32,15 +31,26 @@ export function ScreenWrapper({
 }: ScreenWrapperProps) {
   const Container = scrollable ? ScrollView : View;
 
+   const { user } = useAuth();
+
+
+ const profileImage = user?.avatar_url || getGravatarUrl(user?.user_email);
+
+ console.log(profileImage);
+ 
+   
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <StatusBar barStyle="light-content" />
       <Header
         logoSource={logoSource}
-        onProfilePress={onProfilePress}
-        onNotificationPress={onNotificationPress}
+       onProfilePress={() => router.push("/profile")}
+  onNotificationPress={() => router.push("/notifications")}
         showBackButton={showBackButton}
         title={title}
+        isLoggedIn={user != null && !showBackButton}
+        profileImage={profileImage}
       />
 
       {loading ? (
@@ -57,7 +67,7 @@ export function ScreenWrapper({
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#1e1a18",
+    backgroundColor: "#1e1a18", // dark base
   },
   content: {
     flex: 1,

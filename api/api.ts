@@ -7,10 +7,49 @@ const api = axios.create({
   timeout: 10000,
 });
 
+
+
+// Login (JWT Auth)
+export async function login(username: string, password: string) {
+  try {
+    const res = await api.post("/jwt-auth/v1/token", {
+      username,
+      password,
+    });
+    return res.data; // { token, user_email, user_display_name, user_nicename }
+  } catch (err: any) {
+    const message = err.response?.data?.message || "Login failed";
+    throw new Error(message);
+  }
+}
+
+// Register (WP REST User plugin)
+export async function register(user: {
+  username: string;
+  email: string;
+  password: string;
+}) {
+  try {
+    const res = await api.post("/custom/v1/register", user);
+    return res.data;
+  } catch (err: any) {
+    const message = err.response?.data?.message || "Registration failed";
+    throw new Error(message);
+  }
+}
+
+
+export async function getCurrentUser() {
+  const res = await api.get("/wp/v2/users/me");
+  return res.data;
+}
+
+
 export const getCategories = async () => {
   const res = await api.get("/wp/v2/categories", { params: { per_page: 100 } });
   return res.data;
 };
+
 
 
 export const getPosts = async (
