@@ -36,7 +36,7 @@ export function Header({
         </TouchableOpacity>
       ) : showBackButton ? (
         <TouchableOpacity onPress={() => router.back()} style={styles.sideIcon}>
-          <Feather name="arrow-left" size={22} color="#fff" />
+          <Feather name="arrow-left" size={22} color="#d8d3ca" />
         </TouchableOpacity>
       ) : (
         <View style={styles.sideIcon} />
@@ -54,7 +54,7 @@ export function Header({
       {/* Right: Notification or empty space */}
       {isLoggedIn ? (
         <TouchableOpacity onPress={onNotificationPress} style={styles.sideIcon}>
-          <Feather name="bell" size={22} color="#fff" />
+          <Feather name="bell" size={22} color="#d8d3ca" />
         </TouchableOpacity>
       ) : (
         <View style={styles.sideIcon} />
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#fff",
+    color: "#d8d3ca",
     textAlign: "center",
     flex: 1,
   },
