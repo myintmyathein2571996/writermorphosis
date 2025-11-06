@@ -1,27 +1,30 @@
 // app/ProfilePage.tsx
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useAuth } from "@/context/AuthContext";
-import { getGravatarUrl } from "@/utils/avatar";
-import * as ImagePicker from "expo-image-picker";
+import axios from "axios";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function ProfilePage() {
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
   const [editMode, setEditMode] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.user_display_name || "");
+  const [displayName, setDisplayName] = useState(user?.display_name || "");
   const [email, setEmail] = useState(user?.user_email || "");
-  const [avatar, setAvatar] = useState(user?.avatar_urls?.["96"] || getGravatarUrl(user?.user_email, 120));
+
+  const profilePhotoUrl =
+    user?.profile_photo?.match(/src="([^"]+)"/)?.[1] ||
+    "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+
+  const [avatar, setAvatar] = useState(profilePhotoUrl);
 
   if (!user) {
     return (
@@ -44,36 +47,69 @@ export default function ProfilePage() {
     router.back();
   };
 
-  const handleAvatarChange = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permission denied", "You need to allow access to select an image.");
-      return;
-    }
+  // const handleAvatarChange = async () => {
+  //   const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  //   if (!permissionResult.granted) {
+  //     Alert.alert("Permission denied", "You need to allow access to select an image.");
+  //     return;
+  //   }
 
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+  //   const pickerResult = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 0.8,
+  //   });
 
-    if (!pickerResult.canceled) {
-      setAvatar(pickerResult.assets[0].uri);
-    }
-  };
+  //   if (!pickerResult.canceled) {
+  //     setAvatar(pickerResult.assets[0].uri);
+  //   }
+  // };
 
   const handleSave = async () => {
     try {
-      await updateUser({
-        user_display_name: displayName,
-        user_email: email,
-        avatar: avatar,
-      });
-      Alert.alert("Success", "Profile updated!");
-      setEditMode(false);
-    } catch (err) {
-      Alert.alert("Error", "Failed to update profile.");
+      const formData = new FormData();
+      formData.append("display_name", displayName);
+      formData.append("user_email", email);
+
+      console.log(formData);
+      
+
+      // if avatar is local, upload as file
+      // if (avatar && avatar.startsWith("file")) {
+      //   const filename = avatar.split("/").pop();
+      //   const fileType = filename?.split(".").pop() || "jpg";
+      //   formData.append("avatar", {
+      //     uri: avatar,
+      //     name: filename,
+      //     type: `image/${fileType}`,
+      //   } as any);
+      // }
+
+      // make API request
+      const response = await axios.post(
+        "https://writermorphosis.com/wp-json/um/v1/user",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${user?.token}`, // if your login API gives JWT
+          },
+        }
+      );
+
+      console.log(response);
+      
+
+      // if (response.status === 200) {
+      //   Alert.alert("Success", "Profile updated!");
+      //   setEditMode(false);
+      // } else {
+      //   throw new Error("Unexpected response from server");
+      // }
+    } catch (err: any) {
+      console.error(err);
+      Alert.alert("Error", err.response?.data?.message || "Failed to update profile.");
     }
   };
 
@@ -86,10 +122,10 @@ export default function ProfilePage() {
     >
       <ScrollView contentContainerStyle={styles.container}>
         {/* Avatar */}
-        <TouchableOpacity onPress={editMode ? handleAvatarChange : undefined}>
+        {/* <TouchableOpacity onPress={editMode ? handleAvatarChange : undefined}>
           <Image source={{ uri: avatar }} style={styles.avatar} />
           {editMode && <Text style={styles.changeAvatarText}>Change Avatar</Text>}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Editable Fields */}
         <View style={styles.infoContainer}>
@@ -118,25 +154,9 @@ export default function ProfilePage() {
           )}
         </View>
 
-        {/* Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>5</Text>
-            <Text style={styles.statLabel}>Comments</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>3</Text>
-            <Text style={styles.statLabel}>Likes</Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
+        {/* Buttons */}
         {editMode ? (
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity style={styles.saveButton} onPress={ handleSave}>
             <Text style={styles.saveText}>Save Changes</Text>
           </TouchableOpacity>
         ) : (
@@ -194,30 +214,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 12,
-  },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    backgroundColor: "#2a2a2a",
-    borderRadius: 12,
-    paddingVertical: 16,
-    marginVertical: 20,
-    borderWidth: 1,
-    borderColor: "#333",
-  },
-  statBox: {
-    alignItems: "center",
-  },
-  statNumber: {
-    color: "#f8f8f6",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  statLabel: {
-    color: "#c2c2c2",
-    fontSize: 12,
-    marginTop: 4,
   },
   editButton: {
     backgroundColor: "#333",

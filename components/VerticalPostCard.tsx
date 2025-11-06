@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Eye, MessageCircle } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -21,6 +22,7 @@ type WPPost = {
       id: number;
       name: string;
       taxonomy: string;
+      slug: string;
     }[][];
   };
   categories?: { id: number; name: string }[];
@@ -29,16 +31,16 @@ type WPPost = {
 
 interface VerticalPostCardProps {
   post: WPPost;
-  onClick: () => void;
-  onAuthorClick?: (authorName: string) => void;
+  // onClick: () => void;
+  // onAuthorClick?: (authorName: string) => void;
   featured?: boolean;
   variant?: "default" | "category" | "tag" | "author";
 }
 
 export function VerticalPostCard({
   post,
-  onClick,
-  onAuthorClick,
+  // onClick,
+  // onAuthorClick,
   featured = false,
 }: VerticalPostCardProps) {
   const imageUrl =
@@ -68,49 +70,80 @@ export function VerticalPostCard({
 // Extract categories from embedded terms
 const categories =
   post._embedded?.["wp:term"]?.[0]?.filter(
-    (term: { id: number; name: string; taxonomy: string }) =>
+    (term: { id: number; name: string; taxonomy: string ; slug : string}) =>
       term.taxonomy === "category"
   ) || [];
 
 const category = categories[0]?.name || "Uncategorized";
 
+   const handleAuthorClick = ( id : number , author : any) => {
+    router.push({
+      pathname: `/author/[id]`,
+      params: {
+      id : id,              // required
+        author : JSON.stringify(author) // optional extra data
+      },
+    });
+  };
+
+     const handleCatPress = (slug: string , name : string) => {
+    router.push({
+    pathname: "/category/[slug]",
+    params: { slug , name },
+    });
+
+    console.log(slug);
+    
+
+  };
+
+  const handlePostClick = (post: any) => {
+  router.push({
+    pathname: `/post/[id]`,
+    params: {
+      id: post.id,              
+      post: JSON.stringify(post) // optional extra data
+    },
+  });
+};
+
 
   return (
-    <View style={[styles.card, featured && styles.featuredCard]}>
-      <TouchableOpacity onPress={onClick} activeOpacity={0.8}>
+    <TouchableOpacity style={[styles.card, featured && styles.featuredCard]} activeOpacity={0.8} onPress={() => handlePostClick(post)}>
+   
         <Image
           source={{ uri: imageUrl }}
           style={[styles.image, featured && styles.featuredImage]}
         />
-        <View style={styles.badgeContainer}>
+     
+           <TouchableOpacity onPress={() => handleCatPress(categories[0]?.slug ,category)} activeOpacity={0.8} style={styles.badgeContainer}>
           <Badge text={category} />
-        </View>
+        </TouchableOpacity>
+     
 
-      </TouchableOpacity>
+      {/* </TouchableOpacity> */}
 
       <View style={styles.content}>
-        <TouchableOpacity onPress={onClick}>
+        {/* <TouchableOpacity onPress={onClick}> */}
           <Text style={styles.title}>{postTitle}</Text>
           <Text style={styles.excerpt} numberOfLines={3}>{excerptText}</Text>
-        </TouchableOpacity>
+        {/* </TouchableOpacity> */}
 
        <View style={styles.footer}>
+
+{author?.id && (
   <View style={styles.authorInfo}>
-    {onAuthorClick ? (
+   
       <TouchableOpacity
         style={styles.authorButton}
-        onPress={() => onAuthorClick(authorName)}
+        onPress={() => handleAuthorClick(author?.id,author)}
       >
         <Image source={{ uri: authorAvatar }} style={styles.avatar} />
         <Text style={styles.authorName}>{authorName}</Text>
       </TouchableOpacity>
-    ) : (
-      <View style={styles.authorButton}>
-        <Image source={{ uri: authorAvatar }} style={styles.avatar} />
-        <Text style={styles.authorName}>{authorName}</Text>
-      </View>
-    )}
   </View>
+  )}
+   
 
   {/* move comments + views together on right */}
   <View style={styles.statsRow}>
@@ -128,7 +161,7 @@ const category = categories[0]?.name || "Uncategorized";
 </View>
 
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 

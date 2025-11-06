@@ -95,18 +95,10 @@ export default function HomeScreen() {
     </View>
   );
 
-const handlePostClick = (post: any) => {
-  router.push({
-    pathname: `/post/[id]`,
-    params: {
-      id: post.id,              // required
-      post: JSON.stringify(post) // optional extra data
-    },
-  });
-};
 
 
-  const handleAuthorClick = (authorName: string) => console.log("Clicked author:", authorName);
+
+  // const handleAuthorClick = (authorName: string) => console.log("Clicked author:", authorName);
 
   const postsToShow = activeTab === 'latest' ? latestPosts : popularPosts;
   const loadingCurrent = activeTab === 'latest' ? loadingLatest : loadingPopular;
@@ -124,8 +116,8 @@ const handlePostClick = (post: any) => {
   return (
     <ScreenWrapper
       logoSource={require("../../assets/images/icon.png")}
-      onProfilePress={() => console.log("Profile tapped")}
-      onNotificationPress={() => console.log("Notification tapped")}
+      // onProfilePress={() => console.log("Profile tapped")}
+      // onNotificationPress={() => console.log("Notification tapped")}
       loading={loadingCategories}
       scrollable={true}
     >
@@ -193,8 +185,8 @@ const handlePostClick = (post: any) => {
                 key={post.id}
                 post={post}
                 // featured={idx === 0}
-                onClick={() => handlePostClick(post)}
-                onAuthorClick={handleAuthorClick}
+                // onClick={() => handlePostClick(post)}
+                // onAuthorClick={handleAuthorClick}
               />
             ))}
           </View>

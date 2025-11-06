@@ -2,13 +2,14 @@ import { ScreenWrapper } from "@/components/ScreenWrapper";
 import { useAuth } from "@/context/AuthContext";
 import { Feather } from "@expo/vector-icons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function MoreScreen() {
   const { user, logout } = useAuth();
-  const appVersion = "v1.0.3";
+  const appVersion = Constants.expoConfig?.version || "1.0.0";
 
   const handleProfilePress = () => {
     if (!user) {
@@ -18,11 +19,19 @@ export default function MoreScreen() {
     }
   };
 
+    const profilePhotoUrl =
+    user?.profile_photo
+      ?.match(/src="([^"]+)"/)?.[1] ||
+    "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+
+  const displayName = user?.display_name || "Guest User";
+  const email = user?.user_email || "Tap to Sign In";
+
   return (
     <ScreenWrapper
       logoSource={require("../../assets/images/icon.png")}
-      onProfilePress={handleProfilePress}
-      onNotificationPress={() => console.log("Notification tapped")}
+      // onProfilePress={handleProfilePress}
+      // onNotificationPress={() => console.log("Notification tapped")}
       loading={false}
     >
       <View style={{ flex: 1 }}>
@@ -35,7 +44,7 @@ export default function MoreScreen() {
           <Image
             source={{
               uri:
-                user?.avatar_urls?.["96"] ||
+                profilePhotoUrl ||
                 "https://cdn-icons-png.flaticon.com/512/847/847969.png",
             }}
             style={styles.avatar}
@@ -43,10 +52,10 @@ export default function MoreScreen() {
 
           <View style={{ flex: 1 }}>
             <Text style={styles.profileName}>
-              {user?.user_display_name || "Guest User"}
+              {displayName || "Guest User"}
             </Text>
             <Text style={styles.profileEmail}>
-              {user?.user_email || "Tap to Sign In"}
+              {email || "Tap to Sign In"}
             </Text>
           </View>
 

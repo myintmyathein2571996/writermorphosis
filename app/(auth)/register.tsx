@@ -1,7 +1,16 @@
-import { register as wpRegister } from "@/api/api"; // Import your WP register function if you have one
+import { register as wpRegister } from "@/api/api";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -18,9 +27,8 @@ export default function RegisterScreen() {
 
     try {
       setLoading(true);
-
-      // Call your API function
       const data = await wpRegister({ username, email, password });
+      console.log("Register response:", data);
 
       if (data.id) {
         Alert.alert("Success", "Account created successfully");
@@ -37,38 +45,57 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <View style={styles.card}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor="#999"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#999"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join our community today</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? "Registering..." : "Register"}</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          placeholderTextColor="#8b7d75"
+          value={username}
+          onChangeText={setUsername}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#8b7d75"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#8b7d75"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={styles.link}>Already have an account? Login</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleRegister}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/login")}>
+          <Text style={styles.link}>Already have an account? Login</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -78,30 +105,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1e1a18",
     justifyContent: "center",
-    padding: 24,
+    alignItems: "center",
+    paddingHorizontal: 24,
   },
-  title: {
-    color: "#d8d3ca",
-    fontSize: 28,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  input: {
+  card: {
     backgroundColor: "#2a2422",
-    color: "#d8d3ca",
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#3d3330",
+    width: "100%",
+    borderRadius: 16,
+    padding: 28,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 8,
+    alignItems: "center",
   },
-  button: {
-    backgroundColor: "#4a3a32",
-    padding: 16,
-    borderRadius: 8,
+  logoContainer: {
     alignItems: "center",
     marginBottom: 16,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+  },
+  title: {
+    color: "#e0d8cf",
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  subtitle: {
+    color: "#a89f97",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 28,
+    marginTop: 4,
+  },
+  input: {
+    backgroundColor: "#3a322e",
+    color: "#f0e8df",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#4b3f39",
+    width: "100%",
+  },
+  button: {
+    backgroundColor: "#5a4438",
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "100%",
+    marginTop: 8,
   },
   buttonText: {
     color: "#fff",
@@ -109,8 +168,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   link: {
-    color: "#a59d94",
+    color: "#b5a99e",
     textAlign: "center",
+    marginTop: 18,
     textDecorationLine: "underline",
+    fontSize: 14,
   },
 });

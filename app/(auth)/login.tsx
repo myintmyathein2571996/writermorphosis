@@ -2,60 +2,111 @@ import { login as wpLogin } from "@/api/api";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function LoginScreen() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert("Error", "Please enter both username and password.");
+      return;
+    }
 
-const { login } = useAuth();
+    setLoading(true);
+    try {
+      const res = await wpLogin(username, password);
+      console.log("Login response:", res);
 
-const handleLogin = async () => {
-  setLoading(true);
-  try {
-    const data = await wpLogin(username, password);
-    await login(data, data.token); // store globally
-    Alert.alert("Success", "Welcome back!");
-    // router.replace("/");
-    router.back(); // go back to previous screen
-  } catch (e: any) {
-    Alert.alert("Login Failed", e.message);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!res.success || !res.token || !res.user_id) {
+        throw new Error("Invalid login response");
+      }
+
+      const userRes = await fetch(
+        `https://writermorphosis.com/wp-json/um/v1/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${res.token}`,
+          },
+        }
+      );
+
+      if (!userRes.ok) throw new Error("Failed to fetch user data");
+
+      const userData = await userRes.json();
+      console.log("Fetched user data:", userData);
+
+      await login(userData, res.token);
+      Alert.alert("Welcome back!", `Hello ${userData.user_login || "User"}!`);
+      router.replace("/");
+    } catch (e: any) {
+      console.error("Login error:", e);
+      Alert.alert("Login Failed", e.message || "Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <View style={styles.card}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../assets/images/icon.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor="#999"
-        value={username}
-        onChangeText={setUsername}
-      />
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>Sign in to continue</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          placeholderTextColor="#8b7d75"
+          value={username}
+          onChangeText={setUsername}
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? "Logging in..." : "Login"}</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#8b7d75"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TouchableOpacity onPress={() => router.push("/register")}>
-        <Text style={styles.link}>Don't have an account? Register</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/register")}>
+          <Text style={styles.link}>Don’t have an account? Register</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -65,30 +116,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1e1a18",
     justifyContent: "center",
-    padding: 24,
+    alignItems: "center",
+    paddingHorizontal: 24,
   },
-  title: {
-    color: "#d8d3ca",
-    fontSize: 28,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  input: {
+  card: {
     backgroundColor: "#2a2422",
-    color: "#d8d3ca",
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#3d3330",
+    width: "100%",
+    borderRadius: 16,
+    padding: 28,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 8,
+    alignItems: "center",
   },
-  button: {
-    backgroundColor: "#4a3a32",
-    padding: 16,
-    borderRadius: 8,
+  logoContainer: {
     alignItems: "center",
     marginBottom: 16,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+  },
+  title: {
+    color: "#e0d8cf",
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 8,
+  },
+  subtitle: {
+    color: "#a89f97",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 28,
+    marginTop: 4,
+  },
+  input: {
+    backgroundColor: "#3a322e",
+    color: "#f0e8df",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#4b3f39",
+    width: "100%",
+  },
+  button: {
+    backgroundColor: "#5a4438",
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    width: "100%",
+    marginTop: 8,
   },
   buttonText: {
     color: "#fff",
@@ -96,8 +179,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   link: {
-    color: "#a59d94",
+    color: "#b5a99e",
     textAlign: "center",
+    marginTop: 18,
     textDecorationLine: "underline",
+    fontSize: 14,
   },
 });

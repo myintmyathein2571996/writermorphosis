@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthContext";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -136,6 +137,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
   const [tree, setTree] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const { user } = useAuth(); // Assuming useAuth is a custom hook to get user context
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -204,6 +206,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      console.log(res);
+      
       if (!res.ok) throw new Error("Failed to post comment. May need moderation.");
       await fetchComments();
       resetForm();

@@ -16,10 +16,10 @@ export default function Categories({ navigation }: any) {
   }, []);
 
 
-    const handlePress = (slug: string) => {
+    const handlePress = (slug: string , name : string) => {
     router.push({
     pathname: "/category/[slug]",
-    params: { slug },
+    params: { slug , name},
     });
 
   };
@@ -27,13 +27,13 @@ export default function Categories({ navigation }: any) {
   return (
     <ScreenWrapper
       logoSource={require('../../assets/images/icon.png')}
-      onProfilePress={() => console.log('Profile tapped')}
-      onNotificationPress={() => console.log('Notification tapped')}
+      // onProfilePress={() => console.log('Profile tapped')}
+      // onNotificationPress={() => console.log('Notification tapped')}
         loading={loading} 
     >
       <View style={{ padding: 16 }}>
        {categories.map((cat) => (
-        <CategoryCard key={cat.id} category={cat} onPress={() => handlePress(cat.slug)}/>
+        <CategoryCard key={cat.id} category={cat} onPress={() => handlePress(cat.slug, cat.name)}/>
       ))}
       </View>
      

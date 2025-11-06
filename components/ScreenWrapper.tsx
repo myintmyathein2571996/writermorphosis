@@ -9,7 +9,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getGravatarUrl } from '../utils/avatar';
 import { Header } from "./Header";
 
 interface ScreenWrapperProps {
@@ -34,9 +33,13 @@ export function ScreenWrapper({
    const { user } = useAuth();
 
 
- const profileImage = user?.avatar_url || getGravatarUrl(user?.user_email);
+//  const profileImage = user?.profile || getGravatarUrl(user?.user_email);
+    const profileImage =
+    user?.profile_photo
+      ?.match(/src="([^"]+)"/)?.[1] ||
+    "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
- console.log(profileImage);
+//  console.log(profileImage);
  
    
 

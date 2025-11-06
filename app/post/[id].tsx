@@ -357,7 +357,7 @@ const tagsStyles: Record<string, any> = {
               </View>
 
               {authorPosts.map((p) => (
-                <VerticalPostCard post={p}  key={p.id} onClick={() => handlePostClick(p)}/>
+                <VerticalPostCard post={p}  key={p.id} />
               ))}
 
                <TouchableOpacity onPress={() => handleAuthorClick(author.id, author)} style={{   alignItems: 'center', marginTop: 10, marginBottom: 20, borderColor : 'rgba(224, 169, 109, 0.6)', borderWidth: 1, padding: 10, borderRadius: 8 }}>
@@ -380,7 +380,7 @@ const tagsStyles: Record<string, any> = {
 
               </View>
               {relatedPosts.map((p) => (
-                <VerticalPostCard post={p}  key={p.id} onClick={() => handlePostClick(p)}/>
+                <VerticalPostCard post={p}  key={p.id} />
               ))}
             </View>
             <TouchableOpacity onPress={() =>

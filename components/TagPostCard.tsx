@@ -1,11 +1,15 @@
-import { Clock, Eye, Tag } from "lucide-react-native";
+import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { Eye } from "lucide-react-native";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Badge } from "./ui/Badge";
 
 type WPPost = {
   id: number;
   title: { rendered: string };
   excerpt: { rendered: string };
+  comment_count: number;
   date: string;
   meta?: { post_views?: number; read_time?: string };
   _embedded?: {
@@ -29,19 +33,52 @@ export function TagPostCard({ post, onClick }: TagPostCardProps) {
     : "";
 
   const postTitle = post.title?.rendered || "";
+    const commentsCount = post.comment_count || 0;
   const readTime = post.meta?.read_time || "2 min";
   const views = post.meta?.post_views || 0;
-  const tagName = post.tags?.[0]?.name || "General";
+  // const tagName = post.tags?.[0]?.name || "General";
+  const categories =
+  post._embedded?.["wp:term"]?.[0]?.filter(
+    (term: { id: number; name: string; taxonomy: string ; slug : string}) =>
+      term.taxonomy === "category"
+  ) || [];
+
+const category = categories[0]?.name || "Uncategorized";
+
+     const handleCatPress = (slug: string , name : string) => {
+    router.push({
+    pathname: "/category/[slug]",
+    params: { slug , name },
+    });
+
+    console.log(slug);
+    
+
+  };
+
+  const handlePostClick = (post: any) => {
+  router.push({
+    pathname: `/post/[id]`,
+    params: {
+      id: post.id,              
+      post: JSON.stringify(post) // optional extra data
+    },
+  });
+};
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onClick} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={() => handlePostClick(post)} activeOpacity={0.8}>
       <Image source={{ uri: imageUrl }} style={styles.image} />
-
+ <TouchableOpacity onPress={() => handleCatPress(categories[0]?.slug ,category)} activeOpacity={0.8} style={{ position: "absolute", top: 10, left: 10 }}>
+                  <Badge text={category} />
+                </TouchableOpacity>
       <View style={styles.content}>
-        <View style={styles.tagContainer}>
+        {/* <View style={styles.tagContainer}>
           <Tag size={14} color="#d2884a" />
-          <Text style={styles.tagText}>{tagName}</Text>
-        </View>
+          <Text style={styles.tagText}>{category}</Text>
+        </View> */}
+
+       
 
         <Text style={styles.title} numberOfLines={2}>
           {postTitle}
@@ -52,9 +89,15 @@ export function TagPostCard({ post, onClick }: TagPostCardProps) {
         </Text>
 
         <View style={styles.footer}>
-          <View style={styles.infoItem}>
+          {/* <View style={styles.infoItem}>
             <Clock size={13} color="#888" />
             <Text style={styles.infoText}>{readTime}</Text>
+          </View> */}
+           <View style={styles.infoItem}>
+            <Feather size={13} color="#888" name="message-circle"/>
+            <Text style={styles.infoText}>
+              {commentsCount}
+            </Text>
           </View>
           <View style={styles.infoItem}>
             <Eye size={13} color="#888" />
@@ -62,6 +105,7 @@ export function TagPostCard({ post, onClick }: TagPostCardProps) {
               {views >= 1000 ? `${(views / 1000).toFixed(1)}k` : views}
             </Text>
           </View>
+
         </View>
       </View>
     </TouchableOpacity>
@@ -82,6 +126,7 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 160,
+    position: "relative",
   },
   content: {
     padding: 12,

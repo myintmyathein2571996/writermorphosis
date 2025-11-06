@@ -48,7 +48,7 @@ export function Header({
           {title}
         </Text>
       ) : (
-        <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+        <Image source={logoSource} style={styles.logo} resizeMode="contain" tintColor={'#1e1a18'}/>
       )}
 
       {/* Right: Notification or empty space */}
@@ -89,8 +89,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   profileImage: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: 18,
   },
 });
