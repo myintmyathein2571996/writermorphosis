@@ -12,14 +12,14 @@ const api = axios.create({
 // Login (JWT Auth)
 export async function login(username: string, password: string) {
   try {
-    // const res = await api.post("/jwt-auth/v1/token", {
-    //   username,
-    //   password,
-    // });
-     const res = await api.post("/custom/v1/login", {
+    const res = await api.post("/jwt-auth/v1/token", {
       username,
       password,
     });
+    //  const res = await api.post("/custom/v1/login", {
+    //   username,
+    //   password,
+    // });
     return res.data; // { token, user_email, user_display_name, user_nicename }
   } catch (err: any) {
     const message = err.response?.data?.message || "Login failed";

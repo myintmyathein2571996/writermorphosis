@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,15 +14,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const API_BASE = "https://writermorphosis.com/wp-json/wp/v2";
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const colors = {
-  text: '#f8f8f6',
-  background: '#1a1a1a',
-  card: '#2a2a2a',
-  tint: '#f4d6c1',
-  icon: '#c2c2c2',
-  border: '#333',
+  text: "#f8f8f6",
+  background: "#1a1a1a",
+  card: "#2a2a2a",
+  tint: "#f4d6c1",
+  icon: "#c2c2c2",
+  border: "#333",
 };
 
 interface Comment {
@@ -66,13 +66,8 @@ function buildThreadTree(flatComments: Comment[]): Comment[] {
 }
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReplyPress }) => {
-  const stripHtml = (html?: string) =>
-    html ? html.replace(/<\/?[^>]+(>|$)/g, "").trim() : "";
-
-  const avatar =
-    comment.author_avatar_urls?.["48"] ||
-    comment.author_avatar_urls?.[48] ||
-    null;
+  const stripHtml = (html?: string) => (html ? html.replace(/<\/?[^>]+(>|$)/g, "").trim() : "");
+  const avatar = comment.author_avatar_urls?.["48"] || comment.author_avatar_urls?.[48] || null;
 
   return (
     <View style={{ marginBottom: 12, paddingLeft: depth * 12 }}>
@@ -137,10 +132,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
   const [tree, setTree] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const { user } = useAuth(); // Assuming useAuth is a custom hook to get user context
+  const { user, token } = useAuth();
+  const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [parentForReply, setParentForReply] = useState(0);
   const [replyingToName, setReplyingToName] = useState<string | null>(null);
@@ -176,16 +170,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
   };
 
   const resetForm = () => {
-    setName("");
-    setEmail("");
-    setMessage("");
     setParentForReply(0);
     setReplyingToName(null);
+    setMessage("");
+    setError(null);
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim() || !EMAIL_RE.test(email) || !message.trim()) {
-      setError("Please fill all fields correctly.");
+    if (!message.trim()) {
+      setError("Comment cannot be empty.");
       return;
     }
 
@@ -194,8 +187,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
 
     const payload = {
       post: postId,
-      author_name: name.trim(),
-      author_email: email.trim(),
+      author_name: user?.name,
+      author_email: user?.email,
       content: { raw: message.trim() },
       parent: parentForReply || 0,
     };
@@ -203,17 +196,18 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
     try {
       const res = await fetch(`${API_BASE}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
         body: JSON.stringify(payload),
       });
 
-      console.log(res);
-      
       if (!res.ok) throw new Error("Failed to post comment. May need moderation.");
       await fetchComments();
       resetForm();
     } catch (err: any) {
-      console.warn("post comment error", err);
+      console.warn(err);
       setError(err.message || "Failed to post comment.");
     } finally {
       setSending(false);
@@ -224,7 +218,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
 
   return (
     <View style={{ marginTop: 12 }}>
-      <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: colors.text, paddingVertical: 20 }}>
+      <Text
+        style={{
+          fontSize: 18,
+          fontWeight: "700",
+          marginBottom: 8,
+          color: colors.text,
+          paddingVertical: 20,
+        }}
+      >
         Comments
       </Text>
 
@@ -240,82 +242,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
         </TouchableOpacity>
       )}
 
-      {/* Inline Comment Form */}
-      <View style={{ marginTop: 12, borderTopWidth: 1, borderColor: colors.border, paddingTop: 12 }}>
-        <TextInput
-          placeholder="Your name"
-          placeholderTextColor={colors.icon}
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-          style={{
-            borderWidth: 1,
-            borderColor: colors.border,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            borderRadius: 6,
-            marginBottom: 8,
-            color: colors.text,
-          }}
-          editable={!sending}
-        />
-        <TextInput
-          placeholder="Your email"
-          placeholderTextColor={colors.icon}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          style={{
-            borderWidth: 1,
-            borderColor: colors.border,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            borderRadius: 6,
-            marginBottom: 8,
-            color: colors.text,
-          }}
-          editable={!sending}
-        />
-        <TextInput
-          placeholder="Write your comment..."
-          placeholderTextColor={colors.icon}
-          value={message}
-          onChangeText={setMessage}
-          multiline
-          numberOfLines={4}
-          style={{
-            borderWidth: 1,
-            borderColor: colors.border,
-            paddingHorizontal: 10,
-            paddingVertical: 8,
-            borderRadius: 6,
-            minHeight: 80,
-            textAlignVertical: "top",
-            marginBottom: 8,
-            color: colors.text,
-          }}
-          editable={!sending}
-        />
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={sending}
-          style={{
-            backgroundColor: colors.tint,
-            paddingVertical: 12,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
-        >
-          {sending ? (
-            <ActivityIndicator color={colors.background} />
-          ) : (
-            <Text style={{ color: colors.background, fontWeight: "700" }}>Post Comment</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* Full Modal */}
+      {/* Modal */}
       <Modal visible={showModal} animationType="slide">
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
           <View style={{ flex: 1 }}>
@@ -349,14 +276,12 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
               <FlatList
                 data={tree}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <CommentItem comment={item} onReplyPress={handleReplyPress} />
-                )}
+                renderItem={({ item }) => <CommentItem comment={item} onReplyPress={handleReplyPress} />}
                 contentContainerStyle={{ padding: 12, paddingBottom: 100 }}
               />
             )}
 
-            {/* Sticky form in modal */}
+            {/* Sticky form */}
             <View
               style={{
                 padding: 12,
@@ -365,85 +290,75 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
                 backgroundColor: colors.card,
               }}
             >
-              {parentForReply !== 0 && (
-                <View style={{ flexDirection: "row", marginBottom: 8 }}>
-                  <Text style={{ color: colors.text }}>
-                    Replying to {replyingToName || "comment"}
+              {user ? (
+                <>
+                  {parentForReply !== 0 && (
+                    <View style={{ flexDirection: "row", marginBottom: 8 }}>
+                      <Text style={{ color: colors.text }}>
+                        Replying to {replyingToName || "comment"}
+                      </Text>
+                      <TouchableOpacity onPress={resetForm} style={{ marginLeft: 10 }}>
+                        <Text style={{ color: "#EF4444", fontWeight: "600" }}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  <TextInput
+                    placeholder="Write your comment..."
+                    placeholderTextColor={colors.icon}
+                    value={message}
+                    onChangeText={setMessage}
+                    multiline
+                    numberOfLines={4}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: colors.border,
+                      paddingHorizontal: 10,
+                      paddingVertical: 8,
+                      borderRadius: 6,
+                      minHeight: 80,
+                      textAlignVertical: "top",
+                      marginBottom: 8,
+                      color: colors.text,
+                    }}
+                  />
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    disabled={sending}
+                    style={{
+                      backgroundColor: colors.tint,
+                      paddingVertical: 12,
+                      borderRadius: 8,
+                      alignItems: "center",
+                    }}
+                  >
+                    {sending ? (
+                      <ActivityIndicator color={colors.background} />
+                    ) : (
+                      <Text style={{ color: colors.background, fontWeight: "700" }}>
+                        Post Comment
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View style={{ alignItems: "center", padding: 20 }}>
+                  <Text style={{ color: colors.text, marginBottom: 12 }}>
+                    Please login to comment.
                   </Text>
-                  <TouchableOpacity onPress={resetForm} style={{ marginLeft: 10 }}>
-                    <Text style={{ color: "#EF4444", fontWeight: "600" }}>Cancel</Text>
+                  <TouchableOpacity
+                    onPress={() => router.push("/login")}
+                    style={{
+                      backgroundColor: colors.tint,
+                      paddingVertical: 10,
+                      paddingHorizontal: 20,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: colors.background, fontWeight: "700" }}>Login</Text>
                   </TouchableOpacity>
                 </View>
               )}
-
-              <TextInput
-                placeholder="Your name"
-                placeholderTextColor={colors.icon}
-                value={name}
-                onChangeText={setName}
-                autoCapitalize="words"
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
-                  borderRadius: 6,
-                  marginBottom: 8,
-                  color: colors.text,
-                }}
-              />
-              <TextInput
-                placeholder="Your email"
-                placeholderTextColor={colors.icon}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
-                  borderRadius: 6,
-                  marginBottom: 8,
-                  color: colors.text,
-                }}
-              />
-              <TextInput
-                placeholder="Write your comment..."
-                placeholderTextColor={colors.icon}
-                value={message}
-                onChangeText={setMessage}
-                multiline
-                numberOfLines={4}
-                style={{
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
-                  borderRadius: 6,
-                  minHeight: 80,
-                  textAlignVertical: "top",
-                  marginBottom: 8,
-                  color: colors.text,
-                }}
-              />
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={sending}
-                style={{
-                  backgroundColor: colors.tint,
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                }}
-              >
-                {sending ? (
-                  <ActivityIndicator color={colors.background} />
-                ) : (
-                  <Text style={{ color: colors.background, fontWeight: "700" }}>Post Comment</Text>
-                )}
-              </TouchableOpacity>
             </View>
           </View>
         </SafeAreaView>

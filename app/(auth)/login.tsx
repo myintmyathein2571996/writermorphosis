@@ -1,7 +1,7 @@
 import { login as wpLogin } from "@/api/api";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -31,12 +31,12 @@ export default function LoginScreen() {
       const res = await wpLogin(username, password);
       console.log("Login response:", res);
 
-      if (!res.success || !res.token || !res.user_id) {
+      if (!res.token) {
         throw new Error("Invalid login response");
       }
 
       const userRes = await fetch(
-        `https://writermorphosis.com/wp-json/um/v1/user`,
+        `https://writermorphosis.com/wp-json/custom/v1/user`,
         {
           headers: {
             Authorization: `Bearer ${res.token}`,
@@ -47,7 +47,11 @@ export default function LoginScreen() {
       if (!userRes.ok) throw new Error("Failed to fetch user data");
 
       const userData = await userRes.json();
+      console.log(userData);
+      
       console.log("Fetched user data:", userData);
+      console.log(res.token);
+      
 
       await login(userData, res.token);
       Alert.alert("Welcome back!", `Hello ${userData.user_login || "User"}!`);
@@ -60,8 +64,16 @@ export default function LoginScreen() {
     }
   };
 
+  const codeCommment = true;
+
+  if(codeCommment){
+    return <View style={styles.container}><Text style = {{color : '#fff'}}>Login Page</Text></View>
+  }
+
   return (
     <View style={styles.container}>
+    
+    
       <View style={styles.card}>
         <View style={styles.logoContainer}>
           <Image
