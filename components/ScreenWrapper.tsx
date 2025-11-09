@@ -33,13 +33,7 @@ export function ScreenWrapper({
    const { user } = useAuth();
 
 
-//  const profileImage = user?.profile || getGravatarUrl(user?.user_email);
-    const profileImage =
-    user?.profile_photo
-      ?.match(/src="([^"]+)"/)?.[1] ||
-    "https://cdn-icons-png.flaticon.com/512/847/847969.png";
-
-//  console.log(profileImage);
+  const profilePhotoUrl =  user?.custom_avatar || "https://cdn-icons-png.flaticon.com/512/847/847969.png";
  
    
 
@@ -53,7 +47,7 @@ export function ScreenWrapper({
         showBackButton={showBackButton}
         title={title}
         isLoggedIn={user != null && !showBackButton}
-        profileImage={profileImage}
+        profileImage={profilePhotoUrl}
       />
 
       {loading ? (

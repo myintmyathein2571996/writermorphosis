@@ -35,7 +35,7 @@ export default function PostDetailScreen() {
 
 
 
-
+  const defaultAvatar = require("../../assets/images/noprofile.png");
 
 
 
@@ -228,7 +228,7 @@ const tagsStyles: Record<string, any> = {
     >
      
 
-      <ScrollView contentContainerStyle={styles.contentContainer }>
+      {/* <ScrollView contentContainerStyle={styles.contentContainer }> */}
 
           {/* Featured Image */}
         {featuredImage && (
@@ -343,15 +343,15 @@ const tagsStyles: Record<string, any> = {
 
               <Text style={[styles.sectionTitle, { color: '#d8d3ca' }]}>About the Author</Text>
               <View style={[styles.authorRow, { backgroundColor: '#2f2926', padding: 12, borderRadius: 10 }]}>
-                {author.avatar_urls && (
+              
                   <Image
-                    source={{ uri: author.avatar_urls[96] }}
+                    source={postData?.author_custom_avatar ? { uri: postData.author_custom_avatar } : defaultAvatar }
                     style={{ width: 60, height: 60, borderRadius: 30, marginRight: 12 }}
                   />
-                )}
+              
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 16, fontWeight: '600', color: '#d8d3ca' }}>{author.name}</Text>
-                  {author.description && <Text style={{ color: '#a59d94' }}>{author.description}</Text>}
+                  {author.description && <Text style={{ color: '#a59d94' }} numberOfLines={2}>{author.description}</Text>}
                 </View>
 
               </View>
@@ -395,7 +395,7 @@ const tagsStyles: Record<string, any> = {
           </>
         )}
 
-      </ScrollView>
+      {/* </ScrollView> */}
     </ScreenWrapper>
   );
 }

@@ -4,12 +4,12 @@ import { VerticalPostCard } from "@/components/VerticalPostCard";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 export default function AuthorPage() {
@@ -66,7 +66,7 @@ const authorData = JSON.parse(author as string);
           data={posts}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <VerticalPostCard post={item} key={item.id} onClick={() => null} />
+            <VerticalPostCard post={item} key={item.id}  />
           )}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         />

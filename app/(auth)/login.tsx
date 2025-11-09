@@ -36,7 +36,7 @@ export default function LoginScreen() {
       }
 
       const userRes = await fetch(
-        `https://writermorphosis.com/wp-json/custom/v1/user`,
+        `https://writermorphosis.com/wp-json/wp/v2/users/me`,
         {
           headers: {
             Authorization: `Bearer ${res.token}`,
@@ -64,7 +64,7 @@ export default function LoginScreen() {
     }
   };
 
-  const codeCommment = true;
+  const codeCommment = false;
 
   if(codeCommment){
     return <View style={styles.container}><Text style = {{color : '#fff'}}>Login Page</Text></View>

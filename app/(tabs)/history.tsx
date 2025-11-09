@@ -72,9 +72,9 @@ export default function History({ navigation }: any) {
 
       setData({
         selected: filterByKeyword(json.selected),
-        events: json.events || [],
-        births: json.births || [],
-        deaths: json.deaths || [],
+        events: filterByKeyword(json.events) || [],
+        births: filterByKeyword(json.births) || [],
+        deaths: filterByKeyword(json.deaths) || [],
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -195,8 +195,6 @@ export default function History({ navigation }: any) {
   return (
     <ScreenWrapper
       logoSource={require("../../assets/images/icon.png")}
-      onProfilePress={() => console.log("Profile tapped")}
-      onNotificationPress={() => console.log("Notification tapped")}
       loading={false}
       scrollable={false}
     >

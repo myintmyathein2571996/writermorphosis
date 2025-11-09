@@ -10,6 +10,7 @@ type WPPost = {
   excerpt: { rendered: string };
   comment_count: number;
   date: string;
+  author_custom_avatar?: string;
   meta?: { post_views?: number; read_time?: string };
   _embedded?: {
     author?: {
@@ -24,6 +25,7 @@ type WPPost = {
       taxonomy: string;
       slug: string;
     }[][];
+    
   };
   categories?: { id: number; name: string }[];
 };
@@ -49,9 +51,12 @@ export function VerticalPostCard({
 
   const author = post._embedded?.author?.[0];
   const authorName = author?.name || "Unknown";
-  const authorAvatar =
-    author?.avatar_urls?.["48"]?.replace(/^\/\//, "https://") ||
-    "https://via.placeholder.com/48";
+  const defaultAvatar = require("../assets/images/noprofile.png");
+  // const authorAvatar =
+  //   post?.author_custom_avatar;
+
+
+  
 
   const excerptText = post.excerpt?.rendered
     ? post.excerpt.rendered.replace(/<[^>]+>/g, "")
@@ -138,7 +143,8 @@ const category = categories[0]?.name || "Uncategorized";
         style={styles.authorButton}
         onPress={() => handleAuthorClick(author?.id,author)}
       >
-        <Image source={{ uri: authorAvatar }} style={styles.avatar} />
+       <Image source={post?.author_custom_avatar ? { uri: post.author_custom_avatar } : defaultAvatar } style={styles.avatar} />
+
         <Text style={styles.authorName}>{authorName}</Text>
       </TouchableOpacity>
   </View>

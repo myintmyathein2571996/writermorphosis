@@ -5,7 +5,7 @@ import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function MoreScreen() {
   const { user, logout } = useAuth();
@@ -15,26 +15,23 @@ export default function MoreScreen() {
     if (!user) {
       router.push("/(auth)/login");
     } else {
-      router.push("/profile"); // 👈 make a new page like app/profile.tsx
+      router.push("/profile");
     }
   };
 
-    const profilePhotoUrl =
-    user?.profile_photo
-      ?.match(/src="([^"]+)"/)?.[1] ||
+  const profilePhotoUrl =
+    user?.custom_avatar ||
     "https://cdn-icons-png.flaticon.com/512/847/847969.png";
 
-  const displayName = user?.display_name || "Guest User";
-  const email = user?.user_email || "Tap to Sign In";
+  const displayName = user?.name || "Guest User";
+  const email = user?.email || "Tap to Sign In";
 
   return (
     <ScreenWrapper
       logoSource={require("../../assets/images/icon.png")}
-      // onProfilePress={handleProfilePress}
-      // onNotificationPress={() => console.log("Notification tapped")}
       loading={false}
     >
-      <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Header */}
         <TouchableOpacity
           onPress={handleProfilePress}
@@ -42,23 +39,13 @@ export default function MoreScreen() {
           style={styles.profileContainer}
         >
           <Image
-            source={{
-              uri:
-                profilePhotoUrl ||
-                "https://cdn-icons-png.flaticon.com/512/847/847969.png",
-            }}
+            source={{ uri: profilePhotoUrl }}
             style={styles.avatar}
           />
-
           <View style={{ flex: 1 }}>
-            <Text style={styles.profileName}>
-              {displayName || "Guest User"}
-            </Text>
-            <Text style={styles.profileEmail}>
-              {email || "Tap to Sign In"}
-            </Text>
+            <Text style={styles.profileName}>{displayName}</Text>
+            <Text style={styles.profileEmail}>{email}</Text>
           </View>
-
           <Feather name="chevron-right" size={20} color="#a59d94" />
         </TouchableOpacity>
 
@@ -84,7 +71,7 @@ export default function MoreScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.card, styles.bottomCard]}
+            style={styles.card}
             activeOpacity={0.8}
             onPress={() => router.push("/quiz")}
           >
@@ -99,11 +86,45 @@ export default function MoreScreen() {
             </View>
             <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => router.push("/changePassword")}
+          >
+            <View style={styles.left}>
+              <View style={styles.iconWrapper}>
+                <Feather name="lock" size={20} color="#d8d3ca" />
+              </View>
+              <View>
+                <Text style={styles.title}>Change Password</Text>
+                <Text style={styles.subtext}>Update your login password</Text>
+              </View>
+            </View>
+            <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.card, styles.bottomCard]}
+            activeOpacity={0.8}
+            onPress={() => router.push("/about")}
+          >
+            <View style={styles.left}>
+              <View style={styles.iconWrapper}>
+                <Feather name="info" size={20} color="#d8d3ca" />
+              </View>
+              <View>
+                <Text style={styles.title}>About</Text>
+                <Text style={styles.subtext}>Learn more about the app</Text>
+              </View>
+            </View>
+            <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
+          </TouchableOpacity>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          {/* {user && (
+          {user && (
             <TouchableOpacity
               onPress={logout}
               activeOpacity={0.7}
@@ -111,10 +132,10 @@ export default function MoreScreen() {
             >
               <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
-          )} */}
+          )}
           <Text style={styles.versionText}>App Version {appVersion}</Text>
         </View>
-      </View>
+      </ScrollView>
     </ScreenWrapper>
   );
 }
@@ -161,6 +182,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#2a2422",
     borderColor: "#3d3330",
+    marginBottom: 1,
   },
   topCard: {
     borderTopLeftRadius: 12,

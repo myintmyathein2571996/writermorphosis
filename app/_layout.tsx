@@ -91,6 +91,8 @@ export default function RootLayout() {
         <Stack.Screen name="randomPost" options={{ headerShown: false }} />
         <Stack.Screen name="quiz" options={{ headerShown: false }} />
         <Stack.Screen name="notifications" options={{ headerShown: false }} />
+         <Stack.Screen name="about" options={{ headerShown: false }} />
+          <Stack.Screen name="changePassword" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </AuthProvider>
