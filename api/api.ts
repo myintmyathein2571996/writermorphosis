@@ -49,8 +49,12 @@ export async function getCurrentUser() {
 }
 
 
-export const getCategories = async () => {
-  const res = await api.get("/wp/v2/categories", { params: { per_page: 100 } });
+
+
+export const getCategories = async (page = 1) => {
+  const res = await api.get("/wp/v2/categories", {
+    params: { per_page: 20, page },
+  });
   return res.data;
 };
 
@@ -117,6 +121,7 @@ export const getPopularCategories = async (limit = 10) => {
 };
 
 
+
 export const getPopularTags = async (limit = 10) => {
   const res = await api.get("/wp/v2/tags", { params: { per_page: 100 } });
 
@@ -128,10 +133,13 @@ export const getPopularTags = async (limit = 10) => {
 };
 
 
-export const getTags = async () => {
-  const res = await api.get("/wp/v2/tags", { params: { per_page: 100 } });
+export const getTags = async (page = 1) => {
+  const res = await api.get("/wp/v2/tags", {
+    params: { per_page: 20, page },
+  });
   return res.data;
 };
+
 
 export const getPostsByCategory = async (categoryId: number) => {
   const res = await api.get("/wp/v2/posts", {

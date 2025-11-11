@@ -1,4 +1,5 @@
 import { ScreenWrapper } from "@/components/ScreenWrapper";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Calendar, Clock } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
@@ -11,6 +12,7 @@ import {
   View
 } from "react-native";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";
+
 
 interface WikiEvent {
   text: string;
@@ -43,51 +45,91 @@ export default function History({ navigation }: any) {
     { key: "deaths", title: "Deaths" },
   ]);
 
-  const fetchHistory = useCallback(async () => {
-    try {
-      setLoading(true);
-      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-      const day = String(selectedDate.getDate()).padStart(2, "0");
+const fetchHistory = useCallback(async () => {
+  try {
+    setLoading(true);
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(selectedDate.getDate()).padStart(2, "0");
+    const cacheKey = `history_${month}_${day}`;
 
-      const response = await fetch(
-        `https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/${month}/${day}`,
-        {
-          headers: {
-            "User-Agent": "MyReactNativeApp/1.0 (contact@example.com)",
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (!response.ok)
-        throw new Error(`Failed to fetch history data (status ${response.status})`);
-
-      const json = await response.json();
-
-      const KEYWORDS = ["philosopher", "author", "writer", "poet", "novelist"];
-      const filterByKeyword = (arr: WikiEvent[] | undefined) =>
-        arr?.filter((i) =>
-          KEYWORDS.some((k) => i.text.toLowerCase().includes(k))
-        ) || [];
-
-      setData({
-        selected: filterByKeyword(json.selected),
-        events: filterByKeyword(json.events) || [],
-        births: filterByKeyword(json.births) || [],
-        deaths: filterByKeyword(json.deaths) || [],
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
+    // 1. Try local cache first
+    const cached = await AsyncStorage.getItem(cacheKey);
+    if (cached) {
+      setData(JSON.parse(cached));
       setLoading(false);
+      return;
     }
-  }, [selectedDate]);
+
+    // 2. If not cached, fetch from API
+    const response = await fetch(
+      `https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/all/${month}/${day}`,
+      {
+        headers: {
+          "User-Agent": "MyReactNativeApp/1.0 (contact@example.com)",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok)
+      throw new Error(`Failed to fetch history data (status ${response.status})`);
+
+    const json = await response.json();
+
+    const KEYWORDS = ["philosopher", "author", "writer", "poet", "novelist"];
+    const filterByKeyword = (arr: WikiEvent[] | undefined) =>
+      arr?.filter((i) => KEYWORDS.some((k) => i.text.toLowerCase().includes(k))) || [];
+
+    const filteredData = {
+      selected: filterByKeyword(json.selected),
+      events: filterByKeyword(json.events) || [],
+      births: filterByKeyword(json.births) || [],
+      deaths: filterByKeyword(json.deaths) || [],
+    };
+
+    // 3. Save result in cache
+    await AsyncStorage.setItem(cacheKey, JSON.stringify(filteredData));
+
+    // 4. Update state
+    setData(filteredData);
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "An error occurred");
+  } finally {
+    setLoading(false);
+  }
+}, [selectedDate]);
+
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
-  
+  const renderEmptyState = (label: string) => (
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 32,
+    }}
+  >
+    <Calendar width={48} height={48} color="#888" />
+    <Text style={{ color: "#fff", fontSize: 16, marginTop: 12, fontWeight: "600" }}>
+      No {label} found
+    </Text>
+    <Text
+      style={{
+        color: "#aaa",
+        fontSize: 14,
+        textAlign: "center",
+        marginTop: 6,
+        lineHeight: 20,
+      }}
+    >
+      Looks like there aren’t any historical {label.toLowerCase()} for this date.
+    </Text>
+  </View>
+);
 
   const renderEvent = ({ item, index }: { item: WikiEvent; index: number }) => {
     const page = item.pages?.[0];
@@ -161,36 +203,58 @@ export default function History({ navigation }: any) {
 
   const { selected:  events = [], births = [], deaths = [] } = data;
   const formattedDate = selectedDate.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+  const renderList = (items: WikiEvent[] | undefined, label: string) =>
+  !items || items.length === 0 ? (
+    renderEmptyState(label)
+  ) : (
+    <FlatList
+      data={items}
+      renderItem={renderEvent}
+      keyExtractor={(_, idx) => idx.toString()}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        flexGrow: 1,
+      }}
+      initialNumToRender={4}
+    />
+  );
 
-  const renderScene = SceneMap({
-    events: () => (
-      <FlatList
-        data={events}
-        renderItem={renderEvent}
-        keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-        initialNumToRender={4}
-      />
-    ),
-    births: () => (
-      <FlatList
-        data={births}
-        renderItem={renderEvent}
-        keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-        initialNumToRender={4}
-      />
-    ),
-    deaths: () => (
-      <FlatList
-        data={deaths}
-        renderItem={renderEvent}
-        keyExtractor={(item, idx) => idx.toString()}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-        initialNumToRender={4}
-      />
-    ),
-  });
+const renderScene = SceneMap({
+  events: () => renderList(events, "Events"),
+  births: () => renderList(births, "Births"),
+  deaths: () => renderList(deaths, "Deaths"),
+});
+
+  // const renderScene = SceneMap({
+  //   events: () => (
+  //     <FlatList
+  //       data={events}
+  //       renderItem={renderEvent}
+  //       keyExtractor={(item, idx) => idx.toString()}
+  //       contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+  //       initialNumToRender={4}
+  //     />
+  //   ),
+  //   births: () => (
+  //     <FlatList
+  //       data={births}
+  //       renderItem={renderEvent}
+  //       keyExtractor={(item, idx) => idx.toString()}
+  //       contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+  //       initialNumToRender={4}
+  //     />
+  //   ),
+  //   deaths: () => (
+  //     <FlatList
+  //       data={deaths}
+  //       renderItem={renderEvent}
+  //       keyExtractor={(item, idx) => idx.toString()}
+  //       contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+  //       initialNumToRender={4}
+  //     />
+  //   ),
+  // });
 
   return (
     <ScreenWrapper

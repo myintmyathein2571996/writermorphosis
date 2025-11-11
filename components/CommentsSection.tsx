@@ -29,7 +29,7 @@ interface Comment {
   parent: number;
   date: string;
   author_name?: string;
-  author_avatar_urls?: Record<string, string>;
+  author_custom_avatar?: Record<string, string>;
   content?: { rendered: string };
   children?: Comment[];
 }
@@ -67,7 +67,7 @@ function buildThreadTree(flatComments: Comment[]): Comment[] {
 
 const CommentItem: React.FC<CommentItemProps> = ({ comment, depth = 0, onReplyPress }) => {
   const stripHtml = (html?: string) => (html ? html.replace(/<\/?[^>]+(>|$)/g, "").trim() : "");
-  const avatar = comment.author_avatar_urls?.["48"] || comment.author_avatar_urls?.[48] || null;
+  const avatar = comment.author_custom_avatar;
 
   return (
     <View style={{ marginBottom: 12, paddingLeft: depth * 12 }}>

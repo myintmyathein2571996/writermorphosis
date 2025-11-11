@@ -97,7 +97,7 @@ export default function ProfilePage() {
         } as any);
 
         const res = await axios.post(
-          "https://writermorphosis.com/wp-json/custom/v1/upload-avatar",
+          "https://writermorphosis.com/wp-json/custom/v1/avatar",
           formData,
           {
             headers: {
@@ -180,7 +180,10 @@ export default function ProfilePage() {
       <ScrollView contentContainerStyle={styles.container}>
         {/* Avatar + Info */}
         <View style={styles.avatarSection}>
-          <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
+             <TouchableOpacity onPress={handleAvatarChange} style={{ alignItems: "center" }}>
+                   <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
+             </TouchableOpacity>
+       
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.email}>{email}</Text>
           {user?.roles && (
@@ -241,10 +244,10 @@ export default function ProfilePage() {
             <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
               <Text style={styles.modalTitle}>Edit Profile</Text>
 
-              <TouchableOpacity onPress={handleAvatarChange} style={{ alignItems: "center" }}>
+              {/* <TouchableOpacity onPress={handleAvatarChange} style={{ alignItems: "center" }}>
                 <Image source={{ uri: profilePhotoUrl }} style={styles.modalAvatar} />
                 <Text style={styles.changeAvatarText}>Change Avatar</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <View style={styles.modalField}>
                 <Text style={styles.label}>Display Name</Text>
