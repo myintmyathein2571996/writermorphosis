@@ -1,7 +1,8 @@
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from 'expo-router';
 import React from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 
 const { width } = Dimensions.get("window");
@@ -38,7 +39,7 @@ export const QuoteCarousel: React.FC<QuoteCarouselProps> = ({ quotes }) => {
           loop
           style={styles.carousel}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={() => router.push('/dailyQuote')}>
               <View style={styles.iconContainer}>
                 
                 <MaterialCommunityIcons name="format-quote-close-outline" size={42} color="#d2884a" />
@@ -48,7 +49,7 @@ export const QuoteCarousel: React.FC<QuoteCarouselProps> = ({ quotes }) => {
                 <Text style={styles.quoteText} numberOfLines={2}>"{item.text}"</Text>
                 <Text style={styles.authorText}>— {item.author}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       </View>

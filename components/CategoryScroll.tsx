@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   count: number;
@@ -22,10 +22,10 @@ interface CategoryScrollProps {
 export const CategoryScroll: React.FC<CategoryScrollProps> = ({ categories }) => {
   const router = useRouter();
 
-  const handlePress = (slug: string , name : string) => {
+  const handlePress = (slug: string , name : string , id : number) => {
     router.push({
     pathname: "/category/[slug]",
-    params: { slug , name},
+    params: { slug , name , id},
     });
 
   };
@@ -41,7 +41,7 @@ export const CategoryScroll: React.FC<CategoryScrollProps> = ({ categories }) =>
           <TouchableOpacity
             key={category.id}
             style={styles.badge}
-            onPress={() => handlePress(category.slug , category.name)}
+            onPress={() => handlePress(category.slug , category.name , category.id)}
             activeOpacity={0.8}
           >
             <Text style={styles.badgeText}>{category.name}</Text>

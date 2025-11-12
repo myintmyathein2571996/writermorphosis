@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
   logo: {
     height: 50,
     width: 120,
+     
   },
   title: {
     fontSize: 16,
@@ -92,5 +93,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 18,
+    borderColor: "#f4d6c1",
+     borderWidth : 1,
   },
 });

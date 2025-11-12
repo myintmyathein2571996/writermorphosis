@@ -18,10 +18,10 @@ type WPPost = {
 
 interface CategoryPostCardProps {
   post: WPPost;
-  onClick: () => void;
+  // onClick: () => void;
 }
 
-export function CategoryPostCard({ post, onClick }: CategoryPostCardProps) {
+export function CategoryPostCard({ post }: CategoryPostCardProps) {
   const imageUrl =
     post._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
     "https://via.placeholder.com/400";
@@ -59,7 +59,7 @@ export function CategoryPostCard({ post, onClick }: CategoryPostCardProps) {
         <Text style={styles.title} numberOfLines={2}>
           {title}
         </Text>
-        <Text style={styles.excerpt} numberOfLines={2}>
+        <Text style={styles.excerpt} numberOfLines={1}>
           {excerpt}
         </Text>
 

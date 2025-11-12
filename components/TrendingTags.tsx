@@ -12,7 +12,7 @@ interface Tag {
 
 interface TrendingTagsProps {
   tags: Tag[];
-  onTagClick: (slug: string) => void;
+  onTagClick: (slug: string , id : number) => void;
 }
 
 export const TrendingTags: React.FC<TrendingTagsProps> = ({ tags, onTagClick }) => {
@@ -28,7 +28,7 @@ export const TrendingTags: React.FC<TrendingTagsProps> = ({ tags, onTagClick }) 
         {tags.slice(0, 8).map((tag) => (
           <TouchableOpacity
             key={tag.id}
-            onPress={() => onTagClick(tag.slug)}
+            onPress={() => onTagClick(tag.slug , tag.id)}
             style={styles.tagButton}
           >
             <Text style={styles.tagText}>

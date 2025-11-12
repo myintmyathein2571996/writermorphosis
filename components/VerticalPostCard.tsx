@@ -81,20 +81,21 @@ const categories =
 
 const category = categories[0]?.name || "Uncategorized";
 
-   const handleAuthorClick = ( id : number , author : any) => {
+   const handleAuthorClick = ( id : number , author : any ,avatar :any) => {
     router.push({
       pathname: `/author/[id]`,
       params: {
       id : id,              // required
-        author : JSON.stringify(author) // optional extra data
+        author : JSON.stringify(author),
+          authorAvatar : avatar
       },
     });
   };
 
-     const handleCatPress = (slug: string , name : string) => {
+     const handleCatPress = (slug: string , name : string , id : number) => {
     router.push({
     pathname: "/category/[slug]",
-    params: { slug , name },
+    params: { slug , name , id },
     });
 
     console.log(slug);
@@ -121,7 +122,7 @@ const category = categories[0]?.name || "Uncategorized";
           style={[styles.image, featured && styles.featuredImage]}
         />
      
-           <TouchableOpacity onPress={() => handleCatPress(categories[0]?.slug ,category)} activeOpacity={0.8} style={styles.badgeContainer}>
+           <TouchableOpacity onPress={() => handleCatPress(categories[0]?.slug ,category , categories[0]?.id)} activeOpacity={0.8} style={styles.badgeContainer}>
           <Badge text={category} />
         </TouchableOpacity>
      
@@ -141,7 +142,7 @@ const category = categories[0]?.name || "Uncategorized";
    
       <TouchableOpacity
         style={styles.authorButton}
-        onPress={() => handleAuthorClick(author?.id,author)}
+        onPress={() => handleAuthorClick(author?.id,author , post.author_custom_avatar)}
       >
        <Image source={post?.author_custom_avatar ? { uri: post.author_custom_avatar } : defaultAvatar } style={styles.avatar} />
 
@@ -185,7 +186,8 @@ const styles = StyleSheet.create({
   footer: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   authorInfo: { flexDirection: "row", alignItems: "center", gap: 8 },
   authorButton: { flexDirection: "row", alignItems: "center", gap: 4 },
-  avatar: { width: 20, height: 20, borderRadius: 10 },
+  avatar: { width: 20, height: 20, borderRadius: 10 , borderColor: "rgba(224, 169, 109, 0.6)",
+     borderWidth : 0.5},
   authorName: { color: "#d4d4d4", fontSize: 12 },
   infoItem: { flexDirection: "row", alignItems: "center", marginLeft: 8, gap: 2 },
   infoText: { color: "#888", fontSize: 12 },

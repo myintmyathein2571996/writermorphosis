@@ -130,10 +130,10 @@ export default function HomeScreen() {
 
   const postsToShow = activeTab === "latest" ? latestPosts : popularPosts;
 
-  const handleTagPress = (slug: string) => {
+  const handleTagPress = (slug: string , id : number) => {
     router.push({
       pathname: "/tag/[slug]",
-      params: { slug },
+      params: { slug , id},
     });
   };
 

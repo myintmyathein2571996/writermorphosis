@@ -20,10 +20,10 @@ type WPPost = {
 
 interface TagPostCardProps {
   post: WPPost;
-  onClick: () => void;
+  // onClick: () => void;
 }
 
-export function TagPostCard({ post, onClick }: TagPostCardProps) {
+export function TagPostCard({ post }: TagPostCardProps) {
   const imageUrl =
     post._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
     "https://via.placeholder.com/400";

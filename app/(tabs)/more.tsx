@@ -5,10 +5,20 @@ import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import React from "react";
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+
 
 export default function MoreScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout , token} = useAuth();
   const appVersion = Constants.expoConfig?.version || "1.0.0";
 
   const handleProfilePress = () => {
@@ -18,6 +28,43 @@ export default function MoreScreen() {
       router.push("/profile");
     }
   };
+
+  // Inside your MoreScreen component
+const handleLogout = async () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            // Call your backend logout API
+            if (token) {
+              await fetch("https://writermorphosis.com/wp-json/custom/v1/logout", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              });
+            }
+
+            // Then clear local auth
+            await logout();
+            router.replace("/(auth)/login");
+          } catch (error) {
+            console.error("Logout failed:", error);
+          }
+        },
+      },
+    ],
+    { cancelable: true }
+  );
+};
+
 
   const profilePhotoUrl =
     user?.custom_avatar ||
@@ -38,10 +85,7 @@ export default function MoreScreen() {
           activeOpacity={0.8}
           style={styles.profileContainer}
         >
-          <Image
-            source={{ uri: profilePhotoUrl }}
-            style={styles.avatar}
-          />
+          <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
           <View style={{ flex: 1 }}>
             <Text style={styles.profileName}>{displayName}</Text>
             <Text style={styles.profileEmail}>{email}</Text>
@@ -65,6 +109,24 @@ export default function MoreScreen() {
               <View>
                 <Text style={styles.title}>Random Posts</Text>
                 <Text style={styles.subtext}>Discover something new</Text>
+              </View>
+            </View>
+            <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
+          </TouchableOpacity>
+
+          {/* Daily Quote Card */}
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => router.push("/dailyQuote")}
+          >
+            <View style={styles.left}>
+              <View style={styles.iconWrapper}>
+                <Feather name="book-open" size={20} color="#d8d3ca" />
+              </View>
+              <View>
+                <Text style={styles.title}>Daily Quote</Text>
+                <Text style={styles.subtext}>A bit of wisdom each day</Text>
               </View>
             </View>
             <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
@@ -124,15 +186,16 @@ export default function MoreScreen() {
 
         {/* Footer */}
         <View style={styles.footer}>
-          {user && (
-            <TouchableOpacity
-              onPress={logout}
-              activeOpacity={0.7}
-              style={styles.logoutButton}
-            >
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          )}
+         {/* {user && (
+  <TouchableOpacity
+    onPress={handleLogout} 
+    activeOpacity={0.7}
+    style={styles.logoutButton}
+  >
+    <Text style={styles.logoutText}>Logout</Text>
+  </TouchableOpacity>
+)} */}
+
           <Text style={styles.versionText}>App Version {appVersion}</Text>
         </View>
       </ScrollView>
@@ -154,6 +217,8 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     marginRight: 15,
+     borderWidth: 2,
+    borderColor: "#f4d6c1",
   },
   profileName: {
     color: "#d8d3ca",

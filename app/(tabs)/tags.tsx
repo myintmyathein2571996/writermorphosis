@@ -117,7 +117,7 @@ export default function Tags() {
         }
         ListEmptyComponent={!loading && renderEmpty}
         onEndReachedThreshold={0.4}
-        onEndReached={filteredTags.length > 20 ? loadMore : null}
+        onEndReached={filteredTags.length > 15 ? loadMore : null}
         ListFooterComponent={
           loadingMore ? (
             <View style={{ paddingVertical: 20 }}>

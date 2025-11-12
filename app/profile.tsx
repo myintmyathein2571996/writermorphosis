@@ -8,7 +8,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   Modal,
@@ -24,6 +23,7 @@ export default function ProfilePage() {
   const { user, logout, token, updateUser } = useAuth();
   const [saving, setSaving] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(user?.custom_avatar || null);
   const [displayName, setDisplayName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -31,7 +31,10 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
 
-  // 🟢 Whenever user data changes (from refreshUserData or context), update local state
+const [loggingOut, setLoggingOut] = useState(false);
+
+
+  // Sync user info when context updates
   useEffect(() => {
     if (user) {
       setDisplayName(user.name || "");
@@ -64,7 +67,7 @@ export default function ProfilePage() {
       const res = await axios.get("https://writermorphosis.com/wp-json/wp/v2/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      await updateUser(res.data); // ✅ updates AuthContext user state
+      await updateUser(res.data);
     } catch (err) {
       console.error("Failed to refresh user:", err);
     }
@@ -72,10 +75,7 @@ export default function ProfilePage() {
 
   const handleAvatarChange = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert("Permission denied", "Please allow photo library access.");
-      return;
-    }
+    if (!permission.granted) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -107,11 +107,9 @@ export default function ProfilePage() {
           }
         );
 
-        Alert.alert("Success", res.data.message || "Avatar updated!");
         await refreshUserData();
       } catch (err: any) {
         console.error(err.response?.data);
-        Alert.alert("Error", err.response?.data?.message || "Failed to upload avatar");
       }
     }
   };
@@ -119,13 +117,12 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-
       const formData = new FormData();
       formData.append("name", displayName);
       formData.append("email", email);
       formData.append("description", description);
 
-      const res = await axios.post(
+      await axios.post(
         `https://writermorphosis.com/wp-json/wp/v2/users/${user?.id}`,
         formData,
         {
@@ -136,21 +133,49 @@ export default function ProfilePage() {
         }
       );
 
-      Alert.alert("Success", res.data.message || "Profile updated successfully!");
       setEditModalVisible(false);
       await refreshUserData();
     } catch (err: any) {
       console.error(err.response?.data);
-      Alert.alert("Error", err.response?.data?.message || "Failed to update profile");
     } finally {
       setSaving(false);
     }
   };
 
+  const confirmLogout = () => setLogoutModalVisible(true);
+
   const handleLogout = async () => {
+    setLogoutModalVisible(false);
     await logout();
     router.replace("/(auth)/login");
   };
+
+
+  const handleLogoutConfirm = async () => {
+  try {
+    setLoggingOut(true);
+
+    if (token) {
+      await fetch("https://writermorphosis.com/wp-json/custom/v1/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+    }
+
+    await logout();
+    setLogoutModalVisible(false);
+    router.replace("/(auth)/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+    Alert.alert("Error", "Failed to log out. Please try again.");
+  } finally {
+    setLoggingOut(false);
+  }
+};
+
 
   if (!user) {
     return (
@@ -178,52 +203,57 @@ export default function ProfilePage() {
       showBackButton
     >
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Avatar + Info */}
+        {/* Profile Section */}
         <View style={styles.avatarSection}>
-             <TouchableOpacity onPress={handleAvatarChange} style={{ alignItems: "center" }}>
-                   <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
-             </TouchableOpacity>
-       
+          <TouchableOpacity onPress={handleAvatarChange}>
+            <Image source={{ uri: profilePhotoUrl }} style={styles.avatar} />
+          </TouchableOpacity>
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.email}>{email}</Text>
-          {user?.roles && (
-            <Text style={styles.roleText}>
-              Role: {Array.isArray(user.roles) ? user.roles.join(", ") : user.roles}
-            </Text>
-          )}
           {description ? <Text style={styles.description}>{description}</Text> : null}
         </View>
 
-        {/* Action Buttons */}
+        {/* Buttons */}
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#4a7c59" }]}
+            style={[styles.actionButton, { backgroundColor: "#5a4438" }]}
             onPress={() => setEditModalVisible(true)}
           >
             <Text style={styles.actionText}>Edit</Text>
           </TouchableOpacity>
+        <TouchableOpacity
+  style={[styles.actionButton, { backgroundColor: "#8a4b38" }]}
+  onPress={() => setLogoutModalVisible(true)}
+>
+  <Text style={styles.actionText}>Logout</Text>
+</TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: "#8a4b38" }]}
-            onPress={handleLogout}
-          >
-            <Text style={styles.actionText}>Logout</Text>
-          </TouchableOpacity>
         </View>
 
-        {/* User Posts if not subscriber */}
+        {/* Posts */}
         {!user.roles?.includes("subscriber") && (
           <View style={{ marginTop: 30, width: "100%" }}>
             <Text style={styles.sectionTitle}>My Posts</Text>
             {loadingPosts ? (
               <ActivityIndicator size="large" color="#f4d6c1" />
+            ) : posts.length === 0 ? (
+              <View style={styles.noPostContainer}>
+                <Image
+                  source={{
+                    uri: "https://cdn-icons-png.flaticon.com/512/4076/4076549.png",
+                  }}
+                  style={styles.noPostImage}
+                />
+                <Text style={styles.noPostTitle}>No posts yet</Text>
+                <Text style={styles.noPostSubtitle}>
+                  When you publish your first story, it will appear here.
+                </Text>
+              </View>
             ) : (
               <FlatList
                 data={posts}
                 keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <VerticalPostCard post={item} key={item.id} />
-                )}
+                renderItem={({ item }) => <VerticalPostCard post={item} key={item.id} />}
                 scrollEnabled={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
               />
@@ -233,29 +263,14 @@ export default function ProfilePage() {
       </ScrollView>
 
       {/* Edit Modal */}
-      <Modal
-        visible={editModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setEditModalVisible(false)}
-      >
+      <Modal visible={editModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-
-              {/* <TouchableOpacity onPress={handleAvatarChange} style={{ alignItems: "center" }}>
-                <Image source={{ uri: profilePhotoUrl }} style={styles.modalAvatar} />
-                <Text style={styles.changeAvatarText}>Change Avatar</Text>
-              </TouchableOpacity> */}
-
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <ScrollView>
               <View style={styles.modalField}>
                 <Text style={styles.label}>Display Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                />
+                <TextInput style={styles.input} value={displayName} onChangeText={setDisplayName} />
               </View>
 
               <View style={styles.modalField}>
@@ -280,12 +295,11 @@ export default function ProfilePage() {
 
               <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "#333" }]}
+                  style={[styles.modalButton, { backgroundColor: "#3b302d" }]}
                   onPress={() => setEditModalVisible(false)}
                 >
                   <Text style={styles.modalButtonText}>Cancel</Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
                   style={[styles.modalButton, { backgroundColor: "#4a7c59" }]}
                   onPress={handleSave}
@@ -302,6 +316,46 @@ export default function ProfilePage() {
           </View>
         </View>
       </Modal>
+
+      {/* Logout Modal */}
+   <Modal
+  visible={logoutModalVisible}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setLogoutModalVisible(false)}
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.logoutBox}>
+      <Text style={styles.logoutTitle}>Confirm Logout</Text>
+      <Text style={styles.logoutMessage}>
+        Are you sure you want to log out of your account?
+      </Text>
+
+      <View style={styles.logoutButtons}>
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: "#333" }]}
+          onPress={() => setLogoutModalVisible(false)}
+          disabled={loggingOut}
+        >
+          <Text style={styles.logoutBtnText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: "#8a4b38" }]}
+          onPress={handleLogoutConfirm}
+          disabled={loggingOut}
+        >
+          {loggingOut ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.logoutBtnText}>Logout</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </ScreenWrapper>
   );
 }
@@ -313,27 +367,62 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    marginBottom: 8,
     borderWidth: 2,
     borderColor: "#f4d6c1",
   },
-  displayName: { color: "#f8f8f6", fontSize: 20, fontWeight: "600", marginTop: 4 },
+  displayName: { color: "#f8f8f6", fontSize: 20, fontWeight: "700", marginTop: 10 },
   email: { color: "#cfcfcf", fontSize: 14 },
-  roleText: { color: "#f4d6c1", fontSize: 13, marginTop: 4 },
   description: {
     color: "#c2c2c2",
     fontSize: 14,
     textAlign: "center",
-    marginTop: 6,
-    paddingHorizontal: 10,
+    marginTop: 8,
+    paddingHorizontal: 20,
   },
   buttonRow: { flexDirection: "row", gap: 12, marginTop: 20 },
   actionButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: "center",
   },
+  logoutBox: {
+  backgroundColor: "#2a2a2a",
+  padding: 24,
+  borderRadius: 12,
+  alignItems: "center",
+},
+logoutTitle: {
+  color: "#f4d6c1",
+  fontSize: 20,
+  fontWeight: "700",
+  marginBottom: 8,
+},
+logoutMessage: {
+  color: "#ccc",
+  fontSize: 14,
+  textAlign: "center",
+  marginBottom: 20,
+  lineHeight: 20,
+},
+logoutButtons: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  width: "100%",
+},
+logoutBtn: {
+  flex: 1,
+  marginHorizontal: 6,
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: "center",
+},
+logoutBtnText: {
+  color: "#fff",
+  fontWeight: "600",
+  fontSize: 15,
+},
+
   actionText: { color: "#fff", fontWeight: "600", fontSize: 16 },
   sectionTitle: {
     color: "#f4d6c1",
@@ -352,7 +441,7 @@ const styles = StyleSheet.create({
   },
   loginText: { color: "#f8f8f6", fontWeight: "600" },
 
-  // Modal
+  // Modal base
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -360,44 +449,65 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContainer: {
-    backgroundColor: "#2a2a2a",
-    borderRadius: 12,
+    backgroundColor: "#2a2422",
+    borderRadius: 16,
     padding: 20,
   },
   modalTitle: {
     color: "#f4d6c1",
     fontSize: 20,
     fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: 12,
     textAlign: "center",
   },
-  modalAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 8,
-  },
-  changeAvatarText: { color: "#f4d6c1", fontSize: 14 },
-  modalField: { marginBottom: 12 },
+  modalField: { marginBottom: 14 },
   label: { color: "#c2c2c2", fontSize: 13, marginBottom: 4 },
   input: {
-    backgroundColor: "#3a3a3a",
+    backgroundColor: "#3a322e",
     color: "#fff",
     borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   modalButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 16,
+    marginTop: 10,
   },
   modalButton: {
     flex: 1,
     marginHorizontal: 4,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: "center",
   },
   modalButtonText: { color: "#fff", fontWeight: "600" },
+  noPostContainer: {
+    alignItems: "center",
+    paddingVertical: 40,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+    borderRadius: 12,
+    backgroundColor: "#1f1f1f",
+    marginTop: 10,
+  },
+  noPostImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 12,
+    opacity: 0.8,
+  },
+  noPostTitle: {
+    color: "#f4d6c1",
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+  noPostSubtitle: {
+    color: "#aaa",
+    fontSize: 14,
+    textAlign: "center",
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
 });

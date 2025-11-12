@@ -67,10 +67,12 @@ export default function PostDetailScreen() {
 
   const author = postData._embedded?.author?.[0];
   const authorName = author?.name || "Unknown Author";
-  const rawAvatar = author?.avatar_urls?.["24"] || "";
-  const authorAvatar = rawAvatar
-    ? rawAvatar.replace(/^\/\//, "https://").replace(/&#038;/g, "&")
-    : "https://via.placeholder.com/24.png?text=A";
+
+  // console.log(postData?.author_custom_avatar);
+  
+  // const rawAvatar = postData?.author_custom_avatar || "";
+    // const defaultAvatar = require("../assets/images/noprofile.png");
+  const authorAvatar = postData?.author_custom_avatar || defaultAvatar;
   const postDate = new Date(postData.date).toLocaleDateString();
   const commentCount = postData.comment_count ?? 0;
   const views = postData?.meta?.post_views ?? 0;
@@ -209,12 +211,13 @@ const tagsStyles: Record<string, any> = {
     });
   };
 
-   const handleAuthorClick = ( id : number , author : any) => {
+   const handleAuthorClick = ( id : number , author : any ,  avatar : any) => {
     router.push({
       pathname: `/author/[id]`,
       params: {
       id : id,              // required
-        author : JSON.stringify(author) // optional extra data
+        author : JSON.stringify(author),
+        authorAvatar : avatar
       },
     });
   };
@@ -360,7 +363,7 @@ const tagsStyles: Record<string, any> = {
                 <VerticalPostCard post={p}  key={p.id} />
               ))}
 
-               <TouchableOpacity onPress={() => handleAuthorClick(author.id, author)} style={{   alignItems: 'center', marginTop: 10, marginBottom: 20, borderColor : 'rgba(224, 169, 109, 0.6)', borderWidth: 1, padding: 10, borderRadius: 8 }}>
+               <TouchableOpacity onPress={() => handleAuthorClick(author.id, author , authorAvatar)} style={{   alignItems: 'center', marginTop: 10, marginBottom: 20, borderColor : 'rgba(224, 169, 109, 0.6)', borderWidth: 1, padding: 10, borderRadius: 8 }}>
               <Text style={{ color: '#d8d3ca' }}>See More Posts from author</Text>
             </TouchableOpacity>
             </View>

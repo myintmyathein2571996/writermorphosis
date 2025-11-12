@@ -40,9 +40,10 @@ export default function History({ navigation }: any) {
 
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: "events", title: "Events" },
+ 
     { key: "births", title: "Births" },
     { key: "deaths", title: "Deaths" },
+       { key: "events", title: "Events" },
   ]);
 
 const fetchHistory = useCallback(async () => {
@@ -221,9 +222,10 @@ const fetchHistory = useCallback(async () => {
   );
 
 const renderScene = SceneMap({
-  events: () => renderList(events, "Events"),
+ 
   births: () => renderList(births, "Births"),
   deaths: () => renderList(deaths, "Deaths"),
+   events: () => renderList(events, "Events"),
 });
 
   // const renderScene = SceneMap({

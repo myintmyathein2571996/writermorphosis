@@ -121,7 +121,7 @@ export default function Categories() {
         }
         ListEmptyComponent={!loading && renderEmpty}
         onEndReachedThreshold={0.4}
-        onEndReached={ filteredCategories.length > 20 ? loadMore : null}
+        onEndReached={ filteredCategories.length > 15 ? loadMore : null}
         ListFooterComponent={
           loadingMore ? (
             <View style={{ paddingVertical: 20 }}>
