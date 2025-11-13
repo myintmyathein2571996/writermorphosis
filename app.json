@@ -19,7 +19,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.myintmyathein.writermorphosis"
+      "package": "com.myintmyathein.writermorphosis",
+      "googleServicesFile": "google-services.json"
     },
     "web": {
       "output": "static",

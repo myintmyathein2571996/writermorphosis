@@ -176,7 +176,7 @@ export const incrementPostView = async (postId: number) => {
 };
 
 
-export const getQuotes = async (limit = 100) => {
-  const res = await api.get(`custom/v1/quotes?limit=${limit}`);
+export const getQuotes = async () => {
+  const res = await api.get(`custom/v1/quotes`);
   return res.data; // returns [{ id, text }, ...]
 };

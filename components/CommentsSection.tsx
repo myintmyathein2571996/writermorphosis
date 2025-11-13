@@ -1,4 +1,5 @@
 import { useAuth } from "@/context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -218,21 +219,55 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
 
   return (
     <View style={{ marginTop: 12 }}>
-      <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "700",
-          marginBottom: 8,
-          color: colors.text,
-          paddingVertical: 20,
-        }}
-      >
-        Comments
-      </Text>
+     
 
-      {previewComments.map((c) => (
-        <CommentItem key={c.id} comment={c} onReplyPress={handleReplyPress} />
-      ))}
+{previewComments.length > 0 ? (
+  <>
+    <Text
+      style={{
+        fontSize: 18,
+        fontWeight: "700",
+        marginBottom: 8,
+        color: colors.text,
+        paddingVertical: 20,
+      }}
+    >
+      Comments
+    </Text>
+
+    {previewComments.map((c) => (
+      <CommentItem key={c.id} comment={c} onReplyPress={handleReplyPress} />
+    ))}
+  </>
+) : (
+  <View style={{ alignItems: "center", marginTop: 20 }}>
+    <Ionicons name="information-circle-outline" size={28} color="#888" />
+    <Text style={{ color: "#888", marginTop: 8, fontSize: 14 }}>
+      No comments yet
+    </Text>
+  </View>
+)}
+
+ <TouchableOpacity
+    onPress={() => setShowModal(true)}
+    activeOpacity={0.8}
+    style={{
+      marginTop: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      flexDirection: "row",
+      alignItems: "center",
+    }}
+  >
+    <Ionicons name="chatbubble-outline" size={20} color={colors.icon} />
+    <Text style={{ color: colors.icon, marginLeft: 10 }}>
+      Write a comment...
+    </Text>
+  </TouchableOpacity>
+
 
       {tree.length > 2 && (
         <TouchableOpacity onPress={() => setShowModal(true)} style={{ marginTop: 12 }}>

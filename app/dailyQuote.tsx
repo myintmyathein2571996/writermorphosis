@@ -1,12 +1,12 @@
 import { getQuotes } from "@/api/api";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-    FlatList,
-    RefreshControl,
-    StyleSheet,
-    Text,
-    View
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 
 export default function QuoteList() {
@@ -16,7 +16,7 @@ export default function QuoteList() {
 
   const fetchQuotes = useCallback(async () => {
     try {
-      const quoteData = await getQuotes(10);
+      const quoteData = await getQuotes();
       setQuotes(quoteData || []);
     } catch (error) {
       console.error("Error fetching quotes:", error);

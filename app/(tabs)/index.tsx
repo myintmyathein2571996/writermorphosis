@@ -12,7 +12,7 @@ import { TrendingTags } from "@/components/TrendingTags";
 import { VerticalPostCard } from "@/components/VerticalPostCard";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -37,7 +37,7 @@ export default function HomeScreen() {
 
   // Fetchers
   const fetchQuotes = useCallback(async () => {
-    const quoteData = await getQuotes(10);
+    const quoteData = await getQuotes();
     setQuotes(quoteData || []);
   }, []);
 
