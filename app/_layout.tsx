@@ -1,3 +1,4 @@
+import { initAnalytics, logEvent } from "@/utils/analytics";
 import {
   registerForPushNotificationsAsync,
   saveTokenToWordPress,
@@ -30,11 +31,21 @@ export default function RootLayout() {
   
 
   useEffect(() => {
-    const initNotifications = async () => {
+    const init = async () => {
       const token = await registerForPushNotificationsAsync();
       if (token) await saveTokenToWordPress(token);
+
+      // Initialize analytics (native) when available and log app open
+      try {
+        await initAnalytics();
+        await logEvent("app_open");
+      } catch (err) {
+        // keep non-fatal
+        // eslint-disable-next-line no-console
+        console.warn("Analytics init/log failed:", String(err));
+      }
     };
-    initNotifications();
+    init();
 
     // Listen for notifications while app is open
     const receiveSub = Notifications.addNotificationReceivedListener(
