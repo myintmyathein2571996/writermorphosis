@@ -218,7 +218,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
   const previewComments = tree.slice(0, 2);
 
   return (
-    <View style={{ marginTop: 12 }}>
+    <View style={{  backgroundColor : '#1e1a18', padding : 16}}>
      
 
 {previewComments.length > 0 ? (
@@ -229,7 +229,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ postId }) => {
         fontWeight: "700",
         marginBottom: 8,
         color: colors.text,
-        paddingVertical: 20,
+        paddingBottom: 20,
       }}
     >
       Comments

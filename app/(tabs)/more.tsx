@@ -4,7 +4,6 @@ import { Feather } from "@expo/vector-icons";
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
-import React from "react";
 import {
   Alert,
   Image,
@@ -149,22 +148,25 @@ const handleLogout = async () => {
             <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.card}
-            activeOpacity={0.8}
-            onPress={() => router.push("/changePassword")}
-          >
-            <View style={styles.left}>
-              <View style={styles.iconWrapper}>
-                <Feather name="lock" size={20} color="#d8d3ca" />
-              </View>
-              <View>
-                <Text style={styles.title}>Change Password</Text>
-                <Text style={styles.subtext}>Update your login password</Text>
-              </View>
-            </View>
-            <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
-          </TouchableOpacity>
+        {user && (
+  <TouchableOpacity
+    style={styles.card}
+    activeOpacity={0.8}
+    onPress={() => router.push("/changePassword")}
+  >
+    <View style={styles.left}>
+      <View style={styles.iconWrapper}>
+        <Feather name="lock" size={20} color="#d8d3ca" />
+      </View>
+      <View>
+        <Text style={styles.title}>Change Password</Text>
+        <Text style={styles.subtext}>Update your login password</Text>
+      </View>
+    </View>
+    <SimpleLineIcons name="arrow-right" size={20} color="#d8d3ca" />
+  </TouchableOpacity>
+)}
+
 
           <TouchableOpacity
             style={[styles.card, styles.bottomCard]}
